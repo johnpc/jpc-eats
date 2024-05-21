@@ -8,6 +8,9 @@
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+    "prod-config": "ampx generate outputs --app-id d2d2fy881dt3wt --branch main --profile personal",
+    "ios": "npm run prod-config && npm run dev-ios",
+    "dev-ios": "npm run build && cap sync && cap copy ios && cap open ios",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -16,6 +19,7 @@
     "@capacitor/app": "^5.0.7",
     "@capacitor/core": "^5.7.5",
     "@capacitor/geolocation": "^5.0.7",
+    "@capacitor/ios": "^5.7.5",
     "@mui/icons-material": "^5.15.18",
     "@mui/material": "^5.15.18",
     "aws-amplify": "^6.3.2",
