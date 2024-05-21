@@ -1,0 +1,11 @@
+.gitignore
+.prettierignore
+ios/
+*.svg
+*.png
+*.webp
+*.avif
+*.ico
+.env*
+.husky
+apple-app-site-association
