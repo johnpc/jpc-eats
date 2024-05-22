@@ -8,11 +8,12 @@ import { RotationPage } from "./RotationPage";
 
 export default function TabsView(props: {
   user: AuthUser;
-  youAreHere: { latitude: number; longitude: number };
+  youAreHere?: { latitude: number; longitude: number };
   places: Place[];
   placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
+  loading: boolean;
 }) {
   return (
     <>

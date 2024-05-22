@@ -1,15 +1,16 @@
 import { AuthUser } from "aws-amplify/auth";
 import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../entities";
-import { Collection, Heading, Message, useTheme } from "@aws-amplify/ui-react";
+import { Collection, Heading, Loader, Message, useTheme } from "@aws-amplify/ui-react";
 import { PlaceV1Card } from "./PlaceListPage/PlaceV1Card";
 
 export const PlaceListPage = (props: {
   user: AuthUser;
-  youAreHere: { latitude: number; longitude: number };
+  youAreHere?: { latitude: number; longitude: number };
   places: Place[];
   placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
+  loading: boolean;
 }) => {
   const { tokens } = useTheme();
   return (
@@ -24,12 +25,13 @@ export const PlaceListPage = (props: {
         searchNoResultsFound={
           <Message
             variation="outlined"
-            colorTheme="warning"
+            colorTheme={props.loading ? "info" : "warning"}
             marginBottom={tokens.space.medium}
-            heading="No places found"
+            heading={props.loading ? 'Loading...' : "No places found"}
           >
-            No restaurants near you were found. Reach out to support for more
-            information.
+            {props.loading
+              ? <Loader variation="linear" />
+              : "No restaurants near you were found. Reach out to support for more information."}
           </Message>
         }
       >

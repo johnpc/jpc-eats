@@ -1,7 +1,6 @@
 import {
   Heading,
   Image,
-  Loader,
   View,
   useTheme,
   withAuthenticator,
@@ -30,6 +29,7 @@ import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 
 function App(props: { user: AuthUser }) {
+  const [loading, setLoading] = useState<boolean>(false);
   const [lastOpenTime, setLastOpenTime] = useState<Date>();
   const [places, setPlaces] = useState<Place[]>([]);
   const [placesV1, setPlacesV1] = useState<PlaceV1[]>([]);
@@ -87,6 +87,7 @@ function App(props: { user: AuthUser }) {
 
   useEffect(() => {
     const setup = async () => {
+      setLoading(true);
       const coordinates = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
         maximumAge: 300000,
@@ -137,11 +138,11 @@ function App(props: { user: AuthUser }) {
       setChoices(choices);
       const rotation = await listRotation();
       setRotation(rotation);
+      setLoading(false);
     };
     setup();
   }, []);
 
-  if (!youAreHere) return <Loader variation="linear" />;
   return (
     <>
       <Header />
@@ -152,6 +153,7 @@ function App(props: { user: AuthUser }) {
         rotation={rotation}
         choices={choices}
         placesV1={placesV1}
+        loading={loading}
       />
       <Footer />
     </>

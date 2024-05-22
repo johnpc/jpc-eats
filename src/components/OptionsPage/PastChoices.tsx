@@ -3,7 +3,7 @@ import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../../entities";
 
 export const PastChoices = (props: {
   user: AuthUser;
-  youAreHere: { latitude: number; longitude: number };
+  youAreHere?: { latitude: number; longitude: number };
   places: Place[];
   placesV1: PlaceV1[];
   rotation: RotationEntity[];
