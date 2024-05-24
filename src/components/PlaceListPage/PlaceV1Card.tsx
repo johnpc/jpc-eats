@@ -14,6 +14,7 @@ import {
   RotationEntity,
   createOrUpdateChoice,
   createRotation,
+  selectChoice,
 } from "../../entities";
 import config from "../../../amplify_outputs.json";
 import { useEffect, useState } from "react";
@@ -46,7 +47,9 @@ export const PlaceV1Card = (props: {
   const currentChoice = props.choices.find((c) => c.selectedPlaceId === "NONE");
   const rotationIds = props.rotation.map((r) => r.googlePlaceId);
   const isInRotation = rotationIds.includes(props.place.place_id);
-
+  const handleSelectOption = async (googlePlaceId: string) => {
+    await selectChoice(currentChoice!, googlePlaceId);
+  };
   return (
     <Card key={props.place.place_id} borderRadius="medium" variation="outlined">
       <View padding="xs">
@@ -69,7 +72,12 @@ export const PlaceV1Card = (props: {
         )}
         {currentChoice?.optionPlaceIds?.includes(
           props.place.place_id,
-        ) ? null : (
+        ) ? <Button
+        onClick={() => handleSelectOption(props.place.place_id)}
+        variation="primary"
+      >
+        Select Option
+      </Button> : (
           <Button
             onClick={() => handleAddToOptions(props.place.place_id)}
             variation="primary"
