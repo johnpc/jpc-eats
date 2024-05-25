@@ -16,7 +16,7 @@ export const handler = async (event: LambdaFunctionURLEvent) => {
   const allPlaces: any[] = [];
   let pageToken = undefined;
   do {
-    const url: string = `${GOOGLE_PLACES_API_URL}?location=${latitude},${longitude}&radius=4000&type=restaurant&key=${GOOGLE_PLACES_API_KEY}&pagetoken=${pageToken ?? ""}`;
+    const url: string = `${GOOGLE_PLACES_API_URL}?location=${latitude},${longitude}&type=restaurant&key=${GOOGLE_PLACES_API_KEY}&pagetoken=${pageToken ?? ""}&rankby=distance`;
     console.log({ url });
     const placesApiResponse = await fetch(url, {
       method: "GET",

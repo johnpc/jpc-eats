@@ -1,10 +1,10 @@
 import { Tabs } from "@aws-amplify/ui-react";
 import { AuthUser } from "aws-amplify/auth";
 import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../entities";
-import { PlaceListPage } from "./PlaceListPage";
 import { OptionsPage } from "./OptionsPage";
 import SettingsPage from "./SettingsPage";
 import { RotationPage } from "./RotationPage";
+import { PlaceSearchPage } from "./PlaceSearchPage";
 
 export default function TabsView(props: {
   user: AuthUser;
@@ -20,13 +20,18 @@ export default function TabsView(props: {
       <Tabs
         justifyContent="flex-start"
         spacing="equal"
-        defaultValue="PlaceList"
+        defaultValue="Search"
         items={[
           {
-            label: "Nearby",
-            value: "PlaceList",
-            content: <PlaceListPage {...props} />,
+            label: "Search",
+            value: "Search",
+            content: <PlaceSearchPage {...props} />,
           },
+          // {
+          //   label: "Nearby",
+          //   value: "PlaceList",
+          //   content: <PlaceListPage {...props} />,
+          // },
           {
             label: "Rotation",
             value: "Rotation",

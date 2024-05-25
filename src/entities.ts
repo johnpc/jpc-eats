@@ -142,6 +142,26 @@ export const createRotation = async (
   return rotation.data!;
 };
 
+export const deleteRotation = async (
+  rotation: RotationEntity,
+): Promise<RotationEntity> => {
+  await client.models.Rotation.delete({
+    id: rotation.id,
+  });
+
+  return rotation;
+};
+
+export const updateChoice = async (
+  choice: ChoiceEntity,
+): Promise<ChoiceEntity> => {
+  const updatedChoice = await client.models.Choice.update({
+    id: choice.id,
+    optionPlaceIds: choice.optionPlaceIds,
+  });
+  return updatedChoice.data!;
+};
+
 export const createOrUpdateChoice = async (
   googlePlaceId: string,
 ): Promise<ChoiceEntity> => {

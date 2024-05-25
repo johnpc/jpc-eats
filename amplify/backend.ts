@@ -10,6 +10,14 @@ dotenv.config();
 const getPlaceImageV1Function = defineFunction({
   entry: "./function/get-place-image-v1.ts",
 });
+const searchPlacesFunction = defineFunction({
+  entry: "./function/search-places.ts",
+  timeoutSeconds: 600,
+});
+const getPlaceFunction = defineFunction({
+  entry: "./function/get-place.ts",
+  timeoutSeconds: 600,
+});
 const listAllPlacesFunction = defineFunction({
   entry: "./function/list-all-places.ts",
   timeoutSeconds: 60,
@@ -28,6 +36,8 @@ const authFunction = defineFunction({
  * @see https://docs.amplify.aws/react/build-a-backend/ to add storage, functions, and more
  */
 const backend = defineBackend({
+  getPlaceFunction,
+  searchPlacesFunction,
   getPlaceImageV1Function,
   listAllPlacesFunction,
   getPlaceImageFunction,
@@ -50,6 +60,8 @@ const outputs = {} as { [key: string]: string };
   { name: "listPlacesFunction" },
   { name: "getPlaceImageFunction" },
   { name: "getPlaceImageV1Function" },
+  { name: "searchPlacesFunction" },
+  { name: "getPlaceFunction" },
 ].forEach((functionInfo) => {
   const underlyingLambda =
     // eslint-disable-next-line

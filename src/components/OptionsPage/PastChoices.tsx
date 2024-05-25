@@ -1,5 +1,7 @@
 import { AuthUser } from "aws-amplify/auth";
 import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../../entities";
+import { useEffect, useState } from "react";
+import config from "../../../amplify_outputs.json";
 
 export const PastChoices = (props: {
   user: AuthUser;
@@ -10,14 +12,36 @@ export const PastChoices = (props: {
   choices: ChoiceEntity[];
 }) => {
   const pastChoices = props.choices.filter((c) => c.selectedPlaceId !== "NONE");
+  const selectedOptions = pastChoices.map((choice) => choice.selectedPlaceId);
+  const [selectedPlaces, setSelectedPlaces] = useState<Place[]>([]);
+  useEffect(() => {
+    const setup = async () => {
+      const promises =
+        selectedOptions.map(async (id) => {
+          const response = await fetch(
+            `${config.custom.getPlaceFunction}?placeId=${id}`,
+          );
+          const json = await response.json();
+          console.log({ json });
+          return json;
+        }) ?? [];
+      const selectedPlaces = await Promise.all(promises);
+      console.log({ selectedPlaces });
+      setSelectedPlaces(selectedPlaces);
+    };
+    if (selectedOptions.length !== selectedPlaces.length) {
+      setup();
+    }
+  }, [selectedOptions, selectedPlaces.length]);
 
   return (
     <>
-      {pastChoices.map((choice) => {
-        const selectedPlace = props.placesV1.find(
-          (place) => choice?.selectedPlaceId === place.place_id,
+      {selectedPlaces.map((selectedPlace) => {
+        return (
+          <li key={selectedPlace.id}>
+            Selected {selectedPlace?.displayName.text}
+          </li>
         );
-        return <li key={choice.id}>Selected {selectedPlace?.name}</li>;
       })}
     </>
   );

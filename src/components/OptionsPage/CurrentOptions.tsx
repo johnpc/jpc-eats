@@ -1,7 +1,9 @@
 import { AuthUser } from "aws-amplify/auth";
 import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../../entities";
 import { Collection, Heading, Message, useTheme } from "@aws-amplify/ui-react";
-import { PlaceV1Card } from "../PlaceListPage/PlaceV1Card";
+import { useEffect, useState } from "react";
+import config from "../../../amplify_outputs.json";
+import { PlaceCard } from "../PlaceListPage/PlaceCard";
 
 export const CurrentOptions = (props: {
   user: AuthUser;
@@ -12,13 +14,34 @@ export const CurrentOptions = (props: {
   choices: ChoiceEntity[];
 }) => {
   const { tokens } = useTheme();
-  const currentChoice = props.choices.find((c) => c.selectedPlaceId === "NONE");
-  const choicePlaces = props.placesV1.filter((place) =>
-    (currentChoice?.optionPlaceIds ?? []).includes(place.place_id),
-  );
+  const [choicePlaces, setChoicePlaces] = useState<Place[]>([]);
+  useEffect(() => {
+    const currentChoice = props.choices.find(
+      (c) => c.selectedPlaceId === "NONE",
+    );
+    console.log({ currentChoice });
+    const setup = async () => {
+      const promises =
+        currentChoice?.optionPlaceIds.map(async (id) => {
+          const response = await fetch(
+            `${config.custom.getPlaceFunction}?placeId=${id}`,
+          );
+          const json = await response.json();
+          console.log({ json });
+          return json;
+        }) ?? [];
+      const optionPlaces = await Promise.all(promises);
+      console.log({ optionPlaces });
+      setChoicePlaces(optionPlaces);
+    };
+    if (currentChoice?.optionPlaceIds.length !== choicePlaces.length) {
+      setup();
+    }
+  }, [props.choices, choicePlaces.length]);
+
   return (
     <>
-      <Heading marginBottom={tokens.space.xs}>Nearby Restaurants</Heading>
+      <Heading marginBottom={tokens.space.xs}>Nominated Restaurants</Heading>
       <Collection
         items={choicePlaces}
         type="list"
@@ -37,8 +60,8 @@ export const CurrentOptions = (props: {
         }
       >
         {(item) => (
-          <PlaceV1Card
-            key={item.place_id}
+          <PlaceCard
+            key={item.id}
             place={item}
             rotation={props.rotation}
             choices={props.choices}

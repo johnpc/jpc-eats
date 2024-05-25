@@ -9,7 +9,6 @@ import { Geolocation } from "@capacitor/geolocation";
 import { App as CapacitorApp } from "@capacitor/app";
 
 import { useEffect, useState } from "react";
-import config from "../amplify_outputs.json";
 import {
   ChoiceEntity,
   Place,
@@ -31,8 +30,8 @@ import { Footer } from "./components/Footer";
 function App(props: { user: AuthUser }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [lastOpenTime, setLastOpenTime] = useState<Date>();
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [placesV1, setPlacesV1] = useState<PlaceV1[]>([]);
+  const [places] = useState<Place[]>([]);
+  const [placesV1] = useState<PlaceV1[]>([]);
   const [rotation, setRotation] = useState<RotationEntity[]>([]);
   const [choices, setChoices] = useState<ChoiceEntity[]>([]);
   const [youAreHere, setYouAreHere] = useState<{
@@ -106,33 +105,46 @@ function App(props: { user: AuthUser }) {
         longitude: coordinates.coords.longitude,
       });
 
-      const response = await fetch(config.custom.listPlacesFunction, {
-        body: JSON.stringify({
-          latitude: coordinates.coords.latitude,
-          longitude: coordinates.coords.longitude,
-        }),
-        method: "POST",
-      });
+      // const response = await fetch(config.custom.listPlacesFunction, {
+      //   body: JSON.stringify({
+      //     latitude: coordinates.coords.latitude,
+      //     longitude: coordinates.coords.longitude,
+      //   }),
+      //   method: "POST",
+      // });
 
-      const json = await response.json();
-      setPlaces(
-        json.places.filter(
-          (place: Place) => place.primaryType === "restaurant",
-        ),
-      );
-      console.log({ json });
+      // const json = await response.json();
+      // setPlaces(
+      //   json.places.filter(
+      //     (place: Place) => place.primaryType === "restaurant",
+      //   ),
+      // );
+      // console.log({ json });
 
-      const responseV1 = await fetch(config.custom.listAllPlacesFunction, {
-        body: JSON.stringify({
-          latitude: coordinates.coords.latitude,
-          longitude: coordinates.coords.longitude,
-        }),
-        method: "POST",
-      });
+      // const responseV1 = await fetch(config.custom.listAllPlacesFunction, {
+      //   body: JSON.stringify({
+      //     latitude: coordinates.coords.latitude,
+      //     longitude: coordinates.coords.longitude,
+      //   }),
+      //   method: "POST",
+      // });
 
-      const jsonV1 = await responseV1.json();
-      setPlacesV1(jsonV1.results);
-      console.log({ jsonV1 });
+      // const jsonV1 = await responseV1.json();
+      // console.log({jsonV1})
+      // setPlacesV1(jsonV1.results);
+      // console.log({ jsonV1 });
+
+      // const responseSearch = await fetch(config.custom.searchPlacesFunction, {
+      //   body: JSON.stringify({
+      //     latitude: coordinates.coords.latitude,
+      //     longitude: coordinates.coords.longitude,
+      //   }),
+      //   method: "POST",
+      // });
+
+      // const jsonSearch = await responseSearch.json();
+      // console.log({ jsonSearch });
+      // setPlaces(jsonSearch.places);
 
       const choices = await listChoice();
       setChoices(choices);

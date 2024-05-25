@@ -1,7 +1,9 @@
 import { AuthUser } from "aws-amplify/auth";
 import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../entities";
 import { Collection, Heading, Message, useTheme } from "@aws-amplify/ui-react";
-import { PlaceV1Card } from "./PlaceListPage/PlaceV1Card";
+import { PlaceCard } from "./PlaceListPage/PlaceCard";
+import { useEffect, useState } from "react";
+import config from "../../amplify_outputs.json";
 
 export const RotationPage = (props: {
   user: AuthUser;
@@ -12,10 +14,26 @@ export const RotationPage = (props: {
   choices: ChoiceEntity[];
 }) => {
   const { tokens } = useTheme();
+  const [rotationPlaces, setRotationPlaces] = useState<Place[]>([]);
   const rotationIds = props.rotation.map((r) => r.googlePlaceId);
-  const rotationPlaces = props.placesV1.filter((place) =>
-    rotationIds.includes(place.place_id),
-  );
+  useEffect(() => {
+    const setup = async () => {
+      const promises = rotationIds.map(async (id) => {
+        const response = await fetch(
+          `${config.custom.getPlaceFunction}?placeId=${id}`,
+        );
+        const json = await response.json();
+        console.log({ json });
+        return json;
+      });
+      const places = await Promise.all(promises);
+      console.log({ places });
+      setRotationPlaces(places);
+    };
+    if (rotationIds.length !== rotationPlaces.length) {
+      setup();
+    }
+  }, [rotationIds]);
 
   return (
     <>
@@ -40,8 +58,8 @@ export const RotationPage = (props: {
         }
       >
         {(item) => (
-          <PlaceV1Card
-            key={item.place_id}
+          <PlaceCard
+            key={item.id}
             place={item}
             rotation={props.rotation}
             choices={props.choices}

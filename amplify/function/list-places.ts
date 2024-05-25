@@ -8,6 +8,8 @@ export const handler = async (event: LambdaFunctionURLEvent) => {
   const bodyJson = JSON.parse(event.body ?? "{}");
   const latitude = bodyJson.latitude;
   const longitude = bodyJson.longitude;
+  const sort: "DISTANCE" | "POPULARITY" | undefined =
+    bodyJson.sort ?? "DISTANCE";
 
   const placesApiResponse = await fetch(GOOGLE_PLACES_API_URL, {
     method: "POST",
@@ -18,9 +20,9 @@ export const handler = async (event: LambdaFunctionURLEvent) => {
       "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY!,
     },
     body: JSON.stringify({
-      includedPrimaryTypes: ["restaurant"],
+      includedTypes: ["restaurant"],
       languageCode: "en",
-      rankPreference: "POPULARITY", // or 'DISTANCE',
+      rankPreference: sort,
       maxResultCount: 20,
       locationRestriction: {
         circle: {

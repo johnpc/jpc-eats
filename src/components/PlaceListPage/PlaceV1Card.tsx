@@ -70,14 +70,22 @@ export const PlaceV1Card = (props: {
             Add to Rotation
           </Button>
         )}
-        {currentChoice?.optionPlaceIds?.includes(
-          props.place.place_id,
-        ) ? <Button
-        onClick={() => handleSelectOption(props.place.place_id)}
-        variation="primary"
-      >
-        Select Option
-      </Button> : (
+        {currentChoice?.optionPlaceIds?.includes(props.place.place_id) ? (
+          <>
+            <Button
+              onClick={() => handleSelectOption(props.place.place_id)}
+              variation="primary"
+            >
+              Select Option
+            </Button>
+            <Button
+              onClick={() => handleSelectOption(props.place.place_id)}
+              variation="warning"
+            >
+              Remove From Options Option
+            </Button>
+          </>
+        ) : (
           <Button
             onClick={() => handleAddToOptions(props.place.place_id)}
             variation="primary"
