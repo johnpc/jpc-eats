@@ -72,7 +72,12 @@ export const PlaceCard = (props: {
     });
   };
   return (
-    <Card textAlign={"center"} key={props.place.id} borderRadius="medium" variation="outlined">
+    <Card
+      textAlign={"center"}
+      key={props.place.id}
+      borderRadius="medium"
+      variation="outlined"
+    >
       <View padding="xs">
         <Card fontSize={"medium"}>
           <Badge>{props.place.priceLevel}</Badge>

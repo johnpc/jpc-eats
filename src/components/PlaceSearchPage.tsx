@@ -13,6 +13,7 @@ import {
 import { PlaceCard } from "./PlaceListPage/PlaceCard";
 import { useEffect, useState } from "react";
 import config from "../../amplify_outputs.json";
+import { useDebounce } from "use-debounce";
 
 export const PlaceSearchPage = (props: {
   user: AuthUser;
@@ -25,11 +26,15 @@ export const PlaceSearchPage = (props: {
 }) => {
   const { tokens } = useTheme();
   const [search, setSearch] = useState<string>("food");
+  const [searchValue] = useDebounce(search, 500);
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState<boolean>(props.loading);
   useEffect(() => {
     const setup = async () => {
       if (!props.youAreHere) {
+        return;
+      }
+      if (searchValue.length <= 3) {
         return;
       }
       setLoading(true);
@@ -38,7 +43,7 @@ export const PlaceSearchPage = (props: {
         body: JSON.stringify({
           latitude: props.youAreHere.latitude,
           longitude: props.youAreHere.longitude,
-          search: search,
+          search: searchValue,
         }),
         method: "POST",
       });
@@ -49,14 +54,18 @@ export const PlaceSearchPage = (props: {
       setLoading(false);
     };
     setup();
-  }, [search, props.youAreHere]);
+  }, [searchValue, props.youAreHere]);
+
   const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = async (
     e,
   ) => {
+    console.log({ value: e.target.value });
     if (e.target.value !== search) {
       setSearch(e.target.value);
     }
   };
+  const debouncedOnChange = handleSearchChange;
+
   const searchSuggestions = [
     {
       title: "Fast Food",
@@ -87,16 +96,14 @@ export const PlaceSearchPage = (props: {
     <>
       <Heading marginBottom={tokens.space.xs}>Search Restaurants</Heading>
 
-      <ScrollView width="90%" maxWidth="580px">
+      <ScrollView width="100%">
         <Collection
           items={searchSuggestions}
           type="list"
           direction="row"
-          gap="5px"
+          gap={tokens.space.xs}
           textAlign="center"
-          justifyContent="center"
-          margin={tokens.space.small}
-          padding={tokens.space.small}
+          margin={tokens.space.xs}
           wrap="nowrap"
         >
           {(item, index) => (
@@ -105,7 +112,6 @@ export const PlaceSearchPage = (props: {
               onClick={() => setSearch(item.title)}
               key={index}
               borderRadius="small"
-              maxWidth="10rem"
               variation="elevated"
             >
               {item.title}
@@ -122,7 +128,7 @@ export const PlaceSearchPage = (props: {
         defaultValue={search}
         hasSearchIcon={true}
         hasSearchButton={false}
-        onChange={handleSearchChange}
+        onChange={debouncedOnChange}
       />
       <Collection
         items={places}
