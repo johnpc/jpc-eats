@@ -1,7 +1,17 @@
 import { LambdaFunctionURLEvent } from "aws-lambda";
-const { GOOGLE_PLACES_API_KEY } = process.env;
+import crypto from "crypto";
+const { GOOGLE_PLACES_API_KEY, ADMIN_API_KEY } = process.env;
 const GOOGLE_PLACES_API_URL =
   "https://places.googleapis.com/v1/places:searchText";
+import { Amplify } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
+import config from "../../amplify_outputs.json";
+import { Schema } from "../../amplify/data/resource";
+Amplify.configure(config);
+const client = generateClient<Schema>({
+  authMode: "lambda",
+  authToken: ADMIN_API_KEY,
+});
 
 export const handler = async (event: LambdaFunctionURLEvent) => {
   console.log({ event });
@@ -10,6 +20,29 @@ export const handler = async (event: LambdaFunctionURLEvent) => {
   const longitude = bodyJson.longitude;
   const openNow = bodyJson.openNow ? true : false;
   const search: string | undefined = bodyJson.search;
+  const md5 = crypto
+    .createHash("md5")
+    .update(
+      JSON.stringify({
+        latitude,
+        longitude,
+        openNow,
+        search,
+      }),
+    )
+    .digest("hex");
+  const googleApiCache =
+    await client.models.GoogleApiCache.listGoogleApiCacheByHash({ hash: md5 });
+  const hashMatch = googleApiCache.data?.find((r) => r);
+  if (hashMatch) {
+    console.log("Returning from cache");
+    const response = {
+      statusCode: 200,
+      body: JSON.stringify({ ...JSON.parse(hashMatch.value), fromCache: true }),
+    };
+
+    return response;
+  }
 
   let nextPageToken: string | undefined = undefined;
   const places: { id: string }[] = [];
@@ -47,10 +80,18 @@ export const handler = async (event: LambdaFunctionURLEvent) => {
     nextPageToken = placesApiResponseJson.nextPageToken;
   } while (nextPageToken);
 
+  const resultString = JSON.stringify({ places });
+
   const response = {
     statusCode: 200,
-    body: JSON.stringify({ places }),
+    body: resultString,
   };
+
+  const createdGoogleApiCache = await client.models.GoogleApiCache.create({
+    hash: md5,
+    value: resultString,
+  });
+  console.log({ createdGoogleApiCache });
 
   return response;
 };

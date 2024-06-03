@@ -2,6 +2,18 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { AmplifyFunction, ConstructFactory } from "@aws-amplify/plugin-types";
 
 const schema = a.schema({
+  GoogleApiCache: a
+    .model({
+      hash: a.string().required(),
+      value: a.string().required(),
+    })
+    .secondaryIndexes((index) => [index("hash")])
+    .authorization((allow) => [
+      allow.custom(),
+      allow.owner(),
+      allow.authenticated(),
+      allow.guest(),
+    ]),
   Rotation: a
     .model({
       googlePlaceId: a.string().required(),
