@@ -5,7 +5,7 @@ import {
   useTheme,
   withAuthenticator,
 } from "@aws-amplify/ui-react";
-import { Geolocation } from "@capacitor/geolocation";
+import { Geolocation, Position } from "@capacitor/geolocation";
 import { App as CapacitorApp } from "@capacitor/app";
 
 import { useEffect, useState } from "react";
@@ -87,22 +87,34 @@ function App(props: { user: AuthUser }) {
   useEffect(() => {
     const setup = async () => {
       setLoading(true);
-      const coordinates = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        maximumAge: 300000,
-        timeout: 5000,
-      });
-      // Ann Arbor
-      // const coordinates = {
-      //   coords: {
-      //     latitude: 42.280827,
-      //     longitude: -83.743034,
-      //   },
-      // };
+      let coordinates: Position | undefined;
+      try {
+        coordinates = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          maximumAge: 300000,
+          timeout: 5000,
+        });
+      } catch {
+        coordinates = {
+          timestamp: Date.now(),
+          coords: {
+            // Ann Arbor
+            latitude: 42.280827,
+            longitude: -83.743034,
+            accuracy: 0,
+
+            altitudeAccuracy: null,
+            altitude: null,
+            speed: null,
+            heading: null,
+          },
+        };
+      }
+
       console.log({ coordinates });
       setYouAreHere({
-        latitude: coordinates.coords.latitude,
-        longitude: coordinates.coords.longitude,
+        latitude: coordinates!.coords.latitude,
+        longitude: coordinates!.coords.longitude,
       });
 
       // const response = await fetch(config.custom.listPlacesFunction, {
