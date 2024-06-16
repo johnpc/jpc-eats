@@ -17,7 +17,7 @@ import { useDebounce } from "use-debounce";
 
 export const PlaceSearchPage = (props: {
   user: AuthUser;
-  youAreHere?: { latitude: number; longitude: number };
+  youAreHere: { latitude: number; longitude: number };
   places: Place[];
   placesV1: PlaceV1[];
   rotation: RotationEntity[];
@@ -31,12 +31,6 @@ export const PlaceSearchPage = (props: {
   const [loading, setLoading] = useState<boolean>(props.loading);
   useEffect(() => {
     const setup = async () => {
-      if (!props.youAreHere) {
-        return;
-      }
-      if (searchValue.length <= 3) {
-        return;
-      }
       setLoading(true);
       setPlaces([]);
       const responseSearch = await fetch(config.custom.searchPlacesFunction, {

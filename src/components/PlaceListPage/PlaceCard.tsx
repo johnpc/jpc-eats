@@ -7,6 +7,7 @@ import {
   Text,
   Button,
   useTheme,
+  Pagination,
 } from "@aws-amplify/ui-react";
 import {
   ChoiceEntity,
@@ -27,20 +28,24 @@ export const PlaceCard = (props: {
   choices: ChoiceEntity[];
 }) => {
   const { tokens } = useTheme();
-  const [url, setUrl] = useState<string>();
+  const [selectedUrlIndex, setSelectedUrlIndex] = useState<number>(1);
+  const [photoUrls, setPhotoUrls] = useState<string[]>(["https://placehold.co/600x400/EEE/31343C"]);
   useEffect(() => {
     const setup = async () => {
       if (!props.place.photos) {
-        setUrl("https://placehold.co/600x400/EEE/31343C");
         return;
       }
-      const getPlaceImageUrl = `${config.custom.getPlaceImageFunction}?placeName=${props.place.name}&photoId=${props.place.photos[0].name}&widthPx=${400}&heightPx=${400}`;
-      const response = await fetch(getPlaceImageUrl);
-      const json = await response.json();
-      setUrl(json.photoUri);
+      const urlPromises = (props.place.photos ?? []).map(async (photoId) => {
+        const getPlaceImageUrl = `${config.custom.getPlaceImageFunction}?placeName=${props.place.name}&photoId=${photoId.name}&widthPx=${400}&heightPx=${400}`;
+        const response = await fetch(getPlaceImageUrl);
+        const json = await response.json();
+        return json.photoUri;
+      });
+      const urls = await Promise.all(urlPromises);
+      setPhotoUrls(urls);
     };
     setup();
-  }, []);
+  }, [props.place.name, props.place.photos]);
 
   const handleAddToRotation = async (googlePlaceId: string) => {
     await createRotation(googlePlaceId);
@@ -56,6 +61,23 @@ export const PlaceCard = (props: {
 
   const handleSelectOption = async (googlePlaceId: string) => {
     await selectChoice(currentChoice!, googlePlaceId);
+  };
+
+  const handleNextPage = () => {
+    console.log('handleNextPage');
+    setSelectedUrlIndex(selectedUrlIndex + 1);
+  };
+
+  const handlePreviousPage = () => {
+    console.log('handlePreviousPage');
+    setSelectedUrlIndex(selectedUrlIndex - 1);
+  };
+
+  const handleOnChange = (newPageIndex?: number, prevPageIndex?: number) => {
+    console.log(
+      `handleOnChange \n - newPageIndex: ${newPageIndex} \n - prevPageIndex: ${prevPageIndex}`
+    );
+    setSelectedUrlIndex(newPageIndex ?? 1);
   };
 
   const currentChoice = props.choices.find((c) => c.selectedPlaceId === "NONE");
@@ -97,7 +119,15 @@ export const PlaceCard = (props: {
             {props.place.displayName.text}
           </Heading>
         </Card>
-        <Image width={200} src={url} alt={props.place.displayName.text} />
+        <Image width={200} src={photoUrls[selectedUrlIndex - 1]} alt={props.place.displayName.text} />
+        <Pagination
+          currentPage={selectedUrlIndex}
+          totalPages={photoUrls.length}
+          siblingCount={1}
+          onNext={handleNextPage}
+          onPrevious={handlePreviousPage}
+          onChange={handleOnChange}
+        />
         <Text>{props.place.shortFormattedAddress}</Text>
         <Text margin={tokens.space.small} fontSize={"small"}>
           {props.place.generativeSummary?.overview?.text ||

@@ -1,6 +1,7 @@
 import {
   Heading,
   Image,
+  Loader,
   View,
   useTheme,
   withAuthenticator,
@@ -28,7 +29,7 @@ import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 
 function App(props: { user: AuthUser }) {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [lastOpenTime, setLastOpenTime] = useState<Date>();
   const [places] = useState<Place[]>([]);
   const [placesV1] = useState<PlaceV1[]>([]);
@@ -37,7 +38,11 @@ function App(props: { user: AuthUser }) {
   const [youAreHere, setYouAreHere] = useState<{
     latitude: number;
     longitude: number;
-  }>();
+  }>({
+    // Default to ann arbor
+    latitude: 42.280827,
+    longitude: -83.743034,
+});
 
   useEffect(() => {
     CapacitorApp.addListener("resume", () => {
@@ -117,47 +122,6 @@ function App(props: { user: AuthUser }) {
         longitude: coordinates!.coords.longitude,
       });
 
-      // const response = await fetch(config.custom.listPlacesFunction, {
-      //   body: JSON.stringify({
-      //     latitude: coordinates.coords.latitude,
-      //     longitude: coordinates.coords.longitude,
-      //   }),
-      //   method: "POST",
-      // });
-
-      // const json = await response.json();
-      // setPlaces(
-      //   json.places.filter(
-      //     (place: Place) => place.primaryType === "restaurant",
-      //   ),
-      // );
-      // console.log({ json });
-
-      // const responseV1 = await fetch(config.custom.listAllPlacesFunction, {
-      //   body: JSON.stringify({
-      //     latitude: coordinates.coords.latitude,
-      //     longitude: coordinates.coords.longitude,
-      //   }),
-      //   method: "POST",
-      // });
-
-      // const jsonV1 = await responseV1.json();
-      // console.log({jsonV1})
-      // setPlacesV1(jsonV1.results);
-      // console.log({ jsonV1 });
-
-      // const responseSearch = await fetch(config.custom.searchPlacesFunction, {
-      //   body: JSON.stringify({
-      //     latitude: coordinates.coords.latitude,
-      //     longitude: coordinates.coords.longitude,
-      //   }),
-      //   method: "POST",
-      // });
-
-      // const jsonSearch = await responseSearch.json();
-      // console.log({ jsonSearch });
-      // setPlaces(jsonSearch.places);
-
       const choices = await listChoice();
       setChoices(choices);
       const rotation = await listRotation();
@@ -166,6 +130,8 @@ function App(props: { user: AuthUser }) {
     };
     setup();
   }, []);
+
+  if (loading) return <Loader />;
 
   return (
     <>

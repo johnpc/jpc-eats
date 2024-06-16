@@ -16,6 +16,7 @@
   "dependencies": {
     "@aws-amplify/ui-react": "^6.1.11",
     "@aws-amplify/ui-react-geo": "^2.0.16",
+    "@aws-sdk/s3-request-presigner": "^3.598.0",
     "@capacitor/app": "^5.0.7",
     "@capacitor/core": "^5.7.5",
     "@capacitor/geolocation": "^5.0.7",

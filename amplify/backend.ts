@@ -4,12 +4,12 @@ import { CfnMap } from "aws-cdk-lib/aws-location";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
+import { storage } from "./storage/resource";
+import { getPlaceImageV1Function } from "./function/get-place-image-v1/resource";
+import { getPlaceImageFunction } from "./function/get-place-image/resource";
 import dotenv from "dotenv";
 dotenv.config();
 
-const getPlaceImageV1Function = defineFunction({
-  entry: "./function/get-place-image-v1.ts",
-});
 const searchPlacesFunction = defineFunction({
   entry: "./function/search-places.ts",
   timeoutSeconds: 600,
@@ -24,9 +24,6 @@ const listAllPlacesFunction = defineFunction({
 });
 const listPlacesFunction = defineFunction({
   entry: "./function/list-places.ts",
-});
-const getPlaceImageFunction = defineFunction({
-  entry: "./function/get-place-image.ts",
 });
 const authFunction = defineFunction({
   entry: "./data/custom-authorizer.ts",
@@ -44,6 +41,7 @@ const backend = defineBackend({
   authFunction,
   listPlacesFunction,
   auth,
+  storage,
   data: data(authFunction),
 });
 
