@@ -6,6 +6,7 @@ const schema = a.schema({
     .model({
       hash: a.string().required(),
       value: a.string().required(),
+      source: a.string(),
     })
     .secondaryIndexes((index) => [index("hash")])
     .authorization((allow) => [

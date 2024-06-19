@@ -42,7 +42,7 @@ function App(props: { user: AuthUser }) {
     // Default to ann arbor
     latitude: 42.280827,
     longitude: -83.743034,
-});
+  });
 
   useEffect(() => {
     CapacitorApp.addListener("resume", () => {
@@ -92,46 +92,54 @@ function App(props: { user: AuthUser }) {
   useEffect(() => {
     const setup = async () => {
       setLoading(true);
-      let coordinates: Position | undefined;
-      try {
-        coordinates = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          maximumAge: 300000,
-          timeout: 5000,
+
+      const fetchGeolocation = async () => {
+        let coordinates: Position | undefined;
+        try {
+          coordinates = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            maximumAge: 300000,
+            timeout: 5000,
+          });
+        } catch {
+          coordinates = {
+            timestamp: Date.now(),
+            coords: {
+              // Ann Arbor
+              latitude: 42.280827,
+              longitude: -83.743034,
+              accuracy: 0,
+
+              altitudeAccuracy: null,
+              altitude: null,
+              speed: null,
+              heading: null,
+            },
+          };
+        }
+
+        console.log({ coordinates });
+        setYouAreHere({
+          latitude: coordinates!.coords.latitude,
+          longitude: coordinates!.coords.longitude,
         });
-      } catch {
-        coordinates = {
-          timestamp: Date.now(),
-          coords: {
-            // Ann Arbor
-            latitude: 42.280827,
-            longitude: -83.743034,
-            accuracy: 0,
+      };
 
-            altitudeAccuracy: null,
-            altitude: null,
-            speed: null,
-            heading: null,
-          },
-        };
-      }
-
-      console.log({ coordinates });
-      setYouAreHere({
-        latitude: coordinates!.coords.latitude,
-        longitude: coordinates!.coords.longitude,
-      });
-
-      const choices = await listChoice();
-      setChoices(choices);
-      const rotation = await listRotation();
-      setRotation(rotation);
+      const fetchChoices = async () => {
+        const choices = await listChoice();
+        setChoices(choices);
+      };
+      const fetchRotation = async () => {
+        const rotation = await listRotation();
+        setRotation(rotation);
+      };
+      await Promise.all([fetchChoices(), fetchRotation(), fetchGeolocation()]);
       setLoading(false);
     };
     setup();
   }, []);
 
-  if (loading) return <Loader />;
+  if (loading) return <Loader variation="linear" />;
 
   return (
     <>

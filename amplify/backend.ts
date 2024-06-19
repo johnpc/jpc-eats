@@ -7,17 +7,11 @@ import { data } from "./data/resource";
 import { storage } from "./storage/resource";
 import { getPlaceImageV1Function } from "./function/get-place-image-v1/resource";
 import { getPlaceImageFunction } from "./function/get-place-image/resource";
+import { searchPlacesFunction } from "./function/search-places/resource";
+import { getPlaceFunction } from "./function/get-place/resource";
 import dotenv from "dotenv";
 dotenv.config();
 
-const searchPlacesFunction = defineFunction({
-  entry: "./function/search-places.ts",
-  timeoutSeconds: 600,
-});
-const getPlaceFunction = defineFunction({
-  entry: "./function/get-place.ts",
-  timeoutSeconds: 600,
-});
 const listAllPlacesFunction = defineFunction({
   entry: "./function/list-all-places.ts",
   timeoutSeconds: 60,

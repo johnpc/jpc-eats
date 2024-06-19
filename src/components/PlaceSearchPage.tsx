@@ -48,7 +48,7 @@ export const PlaceSearchPage = (props: {
       setLoading(false);
     };
     setup();
-  }, [searchValue, props.youAreHere]);
+  }, [searchValue]);
 
   const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = async (
     e,
@@ -89,7 +89,6 @@ export const PlaceSearchPage = (props: {
   return (
     <>
       <Heading marginBottom={tokens.space.xs}>Search Restaurants</Heading>
-
       <ScrollView width="100%">
         <Collection
           items={searchSuggestions}

@@ -32,7 +32,7 @@ export const PastChoices = (props: {
     if (selectedOptions.length !== selectedPlaces.length) {
       setup();
     }
-  }, [selectedOptions, selectedPlaces.length]);
+  }, [props.choices]);
 
   return (
     <>

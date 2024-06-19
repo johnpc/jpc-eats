@@ -1,6 +1,7 @@
 import { LambdaFunctionURLEvent, LambdaFunctionURLResult } from "aws-lambda";
 import crypto from "crypto";
 import { env } from "$amplify/env/get-place-image";
+// const env = {} as any;
 import {
   S3Client,
   GetObjectCommand,
@@ -17,6 +18,7 @@ const getPresignedUrl = async (key: string) => {
     Bucket: JPC_EATS_RESOURCES_BUCKET_NAME,
     Key: key,
   });
+  console.log({ JPC_EATS_RESOURCES_BUCKET_NAME, key });
   const response = await client.send(command);
   if (!response.Body) {
     throw new Error(`Object with key ${key} not found`);
@@ -24,7 +26,11 @@ const getPresignedUrl = async (key: string) => {
   console.log("body", response.Body);
   const byteArray = await response.Body.transformToByteArray();
   console.log({ byteArray });
-  const base64String = btoa(String.fromCharCode(...new Uint8Array(byteArray)));
+  const uInt8Array = new Uint8Array(byteArray);
+  console.log({ uInt8Array });
+  const stringFromCharCode = String.fromCharCode(...uInt8Array);
+  console.log({ stringFromCharCode });
+  const base64String = btoa(stringFromCharCode);
 
   // const base64String = btoa(bodyString);
   console.log({ base64String });
@@ -44,64 +50,66 @@ const uploadFile = async (key: string, payload: Buffer) => {
   console.log({ response });
 };
 
-export const handler = async (event: LambdaFunctionURLEvent) => {
-  console.log({ event });
-
-  const photoId = event.queryStringParameters?.photoId;
-  const widthPx = event.queryStringParameters?.widthPx;
-  const heightPx = event.queryStringParameters?.heightPx;
+export const getImageBase64 = async (
+  photoId: string,
+  widthPx: number = 400,
+  heightPx: number = 400,
+  shouldSleep: boolean = false,
+) => {
   const url = `${GOOGLE_PLACES_API_URL}/${photoId}/media?maxHeightPx=${heightPx}&maxWidthPx=${widthPx}&key=${GOOGLE_PLACES_API_KEY}`;
-
   console.log({ url });
-  const md5 = crypto
-    .createHash("md5")
-    .update(
-      JSON.stringify({
-        url,
-      }),
-    )
-    .digest("hex");
+  const md5 = crypto.createHash("md5").update(url).digest("hex");
   try {
     console.log(`Looking up public/${md5}.jpg...`);
-    const linkToStorageFile = await getPresignedUrl(`public/${md5}.jpg`);
-    const response: LambdaFunctionURLResult = {
-      statusCode: 200,
-      body: JSON.stringify({
-        name: md5,
-        photoUri: linkToStorageFile,
-        fromCache: true,
-      }),
-    };
-
-    console.log("CACHE HIT!", { response });
-    return response;
+    return await getPresignedUrl(`public/${md5}.jpg`);
   } catch (e) {
     console.log("Cache miss!", e);
     const placesApiResponse = await fetch(url, {
       method: "GET",
       redirect: "manual",
     });
-
     console.log({ placesApiResponse });
     const placesApiResponseImage = await placesApiResponse.json();
     console.log({ placesApiResponseImage });
-    const response: LambdaFunctionURLResult = {
-      statusCode: 200,
-      body: JSON.stringify(placesApiResponseImage),
-    };
+    const bytes = await fetch(placesApiResponseImage.photoUri);
+    console.log(`Uploading public/${md5}.jpg...`);
+    const result = await uploadFile(
+      `public/${md5}.jpg`,
+      Buffer.from(await bytes.arrayBuffer()),
+    );
+    console.log({ result });
 
-    try {
-      const bytes = await fetch(placesApiResponseImage.photoUri);
-      console.log(`Uploading public/${md5}.jpg...`);
-      const result = await uploadFile(
-        `public/${md5}.jpg`,
-        Buffer.from(await bytes.arrayBuffer()),
-      );
-      console.log("Succeeded: ", result);
-    } catch (error) {
-      console.log("Error : ", error);
+    const sleep = (milliseconds: number) => {
+      return new Promise((resolve) => setTimeout(resolve, milliseconds));
+    };
+    if (shouldSleep) {
+      await sleep(500);
     }
 
-    return response;
+    return await getPresignedUrl(`public/${md5}.jpg`);
   }
+};
+
+export const handler = async (event: LambdaFunctionURLEvent) => {
+  console.log({ event });
+  const photoId = event.queryStringParameters?.photoId;
+  const widthPx = event.queryStringParameters?.widthPx;
+  const heightPx = event.queryStringParameters?.heightPx;
+
+  const photoUri = await getImageBase64(
+    photoId!,
+    widthPx ? parseInt(widthPx) : undefined,
+    heightPx ? parseInt(heightPx) : undefined,
+    true,
+  );
+  const response: LambdaFunctionURLResult = {
+    statusCode: 200,
+    body: JSON.stringify({
+      name: photoId,
+      photoUri: photoUri,
+      fromCache: true,
+    }),
+  };
+
+  return response;
 };

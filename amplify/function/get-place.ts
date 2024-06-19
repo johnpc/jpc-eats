@@ -1,5 +1,4 @@
 import { LambdaFunctionURLEvent } from "aws-lambda";
-import crypto from "crypto";
 const { GOOGLE_PLACES_API_KEY, ADMIN_API_KEY } = process.env;
 const GOOGLE_PLACES_API_URL = "https://places.googleapis.com/v1/places";
 
@@ -17,16 +16,10 @@ export const handler = async (event: LambdaFunctionURLEvent) => {
   console.log({ event });
   const placeId = event.queryStringParameters?.placeId;
   const url = `${GOOGLE_PLACES_API_URL}/${placeId}?key=${GOOGLE_PLACES_API_KEY}&fields=id,name,types,nationalPhoneNumber,formattedAddress,websiteUri,regularOpeningHours,priceLevel,iconBackgroundColor,displayName,primaryTypeDisplayName,takeout,delivery,dineIn,currentOpeningHours,primaryType,shortFormattedAddress,editorialSummary,outdoorSeating,servesCocktails,allowsDogs,goodForGroups,goodForWatchingSports,photos,generativeSummary,iconMaskBaseUri&languageCode=en`;
-  const md5 = crypto
-    .createHash("md5")
-    .update(
-      JSON.stringify({
-        url,
-      }),
-    )
-    .digest("hex");
   const googleApiCache =
-    await client.models.GoogleApiCache.listGoogleApiCacheByHash({ hash: md5 });
+    await client.models.GoogleApiCache.listGoogleApiCacheByHash({
+      hash: placeId!,
+    });
   const hashMatch = googleApiCache.data?.find((r) => r);
   if (hashMatch) {
     console.log("Returning from cache");
@@ -58,7 +51,8 @@ export const handler = async (event: LambdaFunctionURLEvent) => {
     body: resultString,
   };
   const createdGoogleApiCache = await client.models.GoogleApiCache.create({
-    hash: md5,
+    hash: placeId!,
+    source: placeId!,
     value: resultString,
   });
   console.log({ createdGoogleApiCache });

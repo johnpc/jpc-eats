@@ -37,7 +37,7 @@ export const CurrentOptions = (props: {
     if (currentChoice?.optionPlaceIds.length !== choicePlaces.length) {
       setup();
     }
-  }, [props.choices, choicePlaces.length]);
+  }, [props.choices]);
 
   return (
     <>

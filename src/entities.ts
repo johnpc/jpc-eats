@@ -42,6 +42,7 @@ export type ChoiceEntity = {
 
 export type Place = {
   id: string; // identifier
+  images: string[]; // base64 images
   name: string; // identifier
   displayName: {
     languageCode: string; // "en"

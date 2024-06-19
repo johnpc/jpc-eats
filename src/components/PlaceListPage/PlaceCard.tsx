@@ -3,7 +3,6 @@ import {
   Image,
   View,
   Heading,
-  Badge,
   Text,
   Button,
   useTheme,
@@ -29,12 +28,20 @@ export const PlaceCard = (props: {
 }) => {
   const { tokens } = useTheme();
   const [selectedUrlIndex, setSelectedUrlIndex] = useState<number>(1);
-  const [photoUrls, setPhotoUrls] = useState<string[]>(["https://placehold.co/600x400/EEE/31343C"]);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([
+    "https://placehold.co/600x400/EEE/31343C",
+  ]);
   useEffect(() => {
     const setup = async () => {
       if (!props.place.photos) {
         return;
       }
+      // const photoName = props.place.photos[0].name
+      // const getPlaceImageUrl = `${config.custom.getPlaceImageFunction}?placeName=${props.place.name}&photoId=${photoName}&widthPx=${400}&heightPx=${400}`;
+      // const response = await fetch(getPlaceImageUrl);
+      // const json = await response.json();
+      // setPhotoUrls([json.photoUri]);
+
       const urlPromises = (props.place.photos ?? []).map(async (photoId) => {
         const getPlaceImageUrl = `${config.custom.getPlaceImageFunction}?placeName=${props.place.name}&photoId=${photoId.name}&widthPx=${400}&heightPx=${400}`;
         const response = await fetch(getPlaceImageUrl);
@@ -45,7 +52,7 @@ export const PlaceCard = (props: {
       setPhotoUrls(urls);
     };
     setup();
-  }, [props.place.name, props.place.photos]);
+  }, []);
 
   const handleAddToRotation = async (googlePlaceId: string) => {
     await createRotation(googlePlaceId);
@@ -64,18 +71,18 @@ export const PlaceCard = (props: {
   };
 
   const handleNextPage = () => {
-    console.log('handleNextPage');
+    console.log("handleNextPage");
     setSelectedUrlIndex(selectedUrlIndex + 1);
   };
 
   const handlePreviousPage = () => {
-    console.log('handlePreviousPage');
+    console.log("handlePreviousPage");
     setSelectedUrlIndex(selectedUrlIndex - 1);
   };
 
   const handleOnChange = (newPageIndex?: number, prevPageIndex?: number) => {
     console.log(
-      `handleOnChange \n - newPageIndex: ${newPageIndex} \n - prevPageIndex: ${prevPageIndex}`
+      `handleOnChange \n - newPageIndex: ${newPageIndex} \n - prevPageIndex: ${prevPageIndex}`,
     );
     setSelectedUrlIndex(newPageIndex ?? 1);
   };
@@ -100,9 +107,9 @@ export const PlaceCard = (props: {
       borderRadius="medium"
       variation="outlined"
     >
-      <View padding="xs">
-        <Card fontSize={"medium"}>
-          <Badge>{props.place.priceLevel}</Badge>
+      <View>
+        <View padding="xs" width={"50%"} display={"inline-block"}>
+          {/* <Badge>{props.place.priceLevel}</Badge>
           <Badge variation="info">
             {props.place.currentOpeningHours?.openNow ? "Open" : "Closed"}
           </Badge>
@@ -114,26 +121,37 @@ export const PlaceCard = (props: {
           </Badge>
           <Badge variation="error">
             {props.place.delivery ? "Delivery" : "No Delivery"}
-          </Badge>
+          </Badge> */}
           <Heading margin={tokens.space.small}>
             {props.place.displayName.text}
           </Heading>
-        </Card>
-        <Image width={200} src={photoUrls[selectedUrlIndex - 1]} alt={props.place.displayName.text} />
-        <Pagination
-          currentPage={selectedUrlIndex}
-          totalPages={photoUrls.length}
-          siblingCount={1}
-          onNext={handleNextPage}
-          onPrevious={handlePreviousPage}
-          onChange={handleOnChange}
-        />
-        <Text>{props.place.shortFormattedAddress}</Text>
-        <Text margin={tokens.space.small} fontSize={"small"}>
-          {props.place.generativeSummary?.overview?.text ||
-            props.place.editorialSummary?.text ||
-            props.place.websiteUri}
-        </Text>
+          {/* <Text>{props.place.shortFormattedAddress}</Text> */}
+          <Text margin={tokens.space.small} fontSize={"small"}>
+            {props.place.generativeSummary?.overview?.text ||
+              props.place.editorialSummary?.text ||
+              props.place.websiteUri}
+          </Text>
+        </View>
+        {photoUrls[selectedUrlIndex - 1] ===
+        "https://placehold.co/600x400/EEE/31343C" ? null : (
+          <View width={"50%"} display={"inline-block"}>
+            <Image
+              width={250}
+              src={photoUrls[selectedUrlIndex - 1]}
+              alt={props.place.displayName.text}
+            />
+          </View>
+        )}
+        {photoUrls.length <= 1 ? null : (
+          <Pagination
+            currentPage={selectedUrlIndex}
+            totalPages={photoUrls.length}
+            siblingCount={1}
+            onNext={handleNextPage}
+            onPrevious={handlePreviousPage}
+            onChange={handleOnChange}
+          />
+        )}
         {isInRotation ? (
           <Button
             marginTop={tokens.space.xxxs}
