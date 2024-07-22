@@ -98,6 +98,8 @@ export const PlaceCard = (props: {
       optionPlaceIds: currentChoice!.optionPlaceIds.filter(
         (id) => id !== googlePlaceId,
       ),
+      createdAt: currentChoice!.createdAt,
+      updatedAt: currentChoice!.updatedAt,
     });
   };
   return (

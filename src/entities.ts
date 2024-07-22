@@ -38,6 +38,8 @@ export type ChoiceEntity = {
   id: string;
   optionPlaceIds: (string | null)[];
   selectedPlaceId?: string | null;
+  updatedAt: string;
+  createdAt: string;
 };
 
 export type Place = {
