@@ -27,6 +27,11 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index("selectedPlaceId")])
     .authorization((allow) => [allow.owner(), allow.custom()]),
+  Preferences: a
+    .model({
+      compactMode: a.boolean(),
+    })
+    .authorization((allow) => [allow.owner(), allow.custom()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

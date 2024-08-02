@@ -11,6 +11,7 @@ import {
 import {
   ChoiceEntity,
   Place,
+  PreferencesEntity,
   RotationEntity,
   createOrUpdateChoice,
   createRotation,
@@ -20,11 +21,17 @@ import {
 } from "../../entities";
 import config from "../../../amplify_outputs.json";
 import { useEffect, useState } from "react";
+import UpdateDisabledIcon from "@mui/icons-material/UpdateDisabled";
+import UpdateIcon from "@mui/icons-material/Update";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 export const PlaceCard = (props: {
   place: Place;
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
+  preferences: PreferencesEntity;
 }) => {
   const { tokens } = useTheme();
   const [selectedUrlIndex, setSelectedUrlIndex] = useState<number>(1);
@@ -102,6 +109,75 @@ export const PlaceCard = (props: {
       updatedAt: currentChoice!.updatedAt,
     });
   };
+
+  if (props.preferences.compactMode) {
+    return (
+      <Card key={props.place.id} borderRadius="medium" variation="elevated">
+        <View width={"40%"} display={"inline-block"}>
+          <Heading
+            display={"inline-block"}
+            textAlign={"left"}
+            margin={tokens.space.small}
+          >
+            {props.place.displayName.text}
+          </Heading>
+        </View>
+        <View textAlign={"right"} width={"60%"} display={"inline-block"}>
+          {isInRotation ? (
+            <Button
+              display={"inline-block"}
+              size="small"
+              onClick={() => handleRemoveFromRotation(rotation!)}
+              variation="destructive"
+              marginRight={tokens.space.small}
+            >
+              <UpdateDisabledIcon />
+            </Button>
+          ) : (
+            <Button
+              display={"inline-block"}
+              size="small"
+              onClick={() => handleAddToRotation(props.place.id)}
+              marginRight={tokens.space.small}
+            >
+              <UpdateIcon />
+            </Button>
+          )}
+          {currentChoice?.optionPlaceIds?.includes(props.place.id) ? (
+            <>
+              <Button
+                display={"inline-block"}
+                marginRight={tokens.space.small}
+                onClick={() => handleSelectOption(props.place.id)}
+                size="small"
+                variation="primary"
+              >
+                <CheckCircleOutlineIcon />
+              </Button>
+              <Button
+                display={"inline-block"}
+                size="small"
+                onClick={() => handleRemoveOption(props.place.id)}
+                variation="warning"
+              >
+                <RemoveCircleOutlineIcon />
+              </Button>
+            </>
+          ) : (
+            <Button
+              display={"inline-block"}
+              size="small"
+              onClick={() => handleAddToOptions(props.place.id)}
+              variation="primary"
+            >
+              <AddCircleOutlineIcon />
+            </Button>
+          )}
+        </View>
+      </Card>
+    );
+  }
+
   return (
     <Card
       textAlign={"center"}
@@ -156,8 +232,6 @@ export const PlaceCard = (props: {
         )}
         {isInRotation ? (
           <Button
-            marginTop={tokens.space.xxxs}
-            isFullWidth
             onClick={() => handleRemoveFromRotation(rotation!)}
             variation="destructive"
             marginRight={tokens.space.small}
@@ -166,8 +240,6 @@ export const PlaceCard = (props: {
           </Button>
         ) : (
           <Button
-            marginTop={tokens.space.xxxs}
-            isFullWidth
             onClick={() => handleAddToRotation(props.place.id)}
             marginRight={tokens.space.small}
           >
@@ -178,16 +250,12 @@ export const PlaceCard = (props: {
           <>
             {" "}
             <Button
-              marginTop={tokens.space.xxxs}
-              isFullWidth
               onClick={() => handleSelectOption(props.place.id)}
               variation="primary"
             >
               Select Option
             </Button>
             <Button
-              marginTop={tokens.space.xxxs}
-              isFullWidth
               onClick={() => handleRemoveOption(props.place.id)}
               variation="warning"
             >
@@ -196,8 +264,6 @@ export const PlaceCard = (props: {
           </>
         ) : (
           <Button
-            marginTop={tokens.space.xxxs}
-            isFullWidth
             onClick={() => handleAddToOptions(props.place.id)}
             variation="primary"
           >

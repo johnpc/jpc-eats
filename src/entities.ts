@@ -42,6 +42,11 @@ export type ChoiceEntity = {
   createdAt: string;
 };
 
+export type PreferencesEntity = {
+  id?: string;
+  compactMode?: boolean | null;
+};
+
 export type Place = {
   id: string; // identifier
   images: string[]; // base64 images
@@ -133,6 +138,41 @@ export const listRotation = async (): Promise<RotationEntity[]> => {
 export const listChoice = async (): Promise<ChoiceEntity[]> => {
   const choice = await client.models.Choice.list();
   return choice.data;
+};
+
+export const getPreferences = async (): Promise<PreferencesEntity> => {
+  const allPreferences = (await client.models.Preferences.list()).data ?? [];
+  const preferences = allPreferences
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+    .find((g) => g);
+
+  if (!preferences) {
+    return {
+      id: undefined,
+      compactMode: false,
+    };
+  }
+  return preferences;
+};
+
+export const updatePreferences = async (
+  preferences: PreferencesEntity,
+): Promise<PreferencesEntity> => {
+  if (!preferences.id) {
+    const preference = await client.models.Preferences.create({
+      compactMode: preferences.compactMode ?? false,
+    });
+    return preference.data!;
+  } else {
+    const preference = await client.models.Preferences.update({
+      id: preferences.id,
+      compactMode: preferences.compactMode,
+    });
+    return preference.data!;
+  }
 };
 
 export const createRotation = async (
@@ -250,6 +290,34 @@ export const updateChoiceListener = (
   const listener = client.models.Choice.onUpdate().subscribe({
     next: async (choice: Schema["Choice"]["type"]) => {
       fn(choice);
+    },
+    error: (error: Error) => {
+      console.error("Subscription error", error);
+    },
+  });
+  return listener;
+};
+
+export const createPreferencesListener = (
+  fn: (preferences: PreferencesEntity) => void,
+) => {
+  const listener = client.models.Preferences.onCreate().subscribe({
+    next: async (preferences: Schema["Preferences"]["type"]) => {
+      fn(preferences);
+    },
+    error: (error: Error) => {
+      console.error("Subscription error", error);
+    },
+  });
+  return listener;
+};
+
+export const updatePreferencesListener = (
+  fn: (preferences: PreferencesEntity) => void,
+) => {
+  const listener = client.models.Preferences.onUpdate().subscribe({
+    next: async (preferences: Schema["Preferences"]["type"]) => {
+      fn(preferences);
     },
     error: (error: Error) => {
       console.error("Subscription error", error);

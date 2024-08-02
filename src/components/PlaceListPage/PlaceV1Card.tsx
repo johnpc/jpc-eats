@@ -11,6 +11,7 @@ import {
 import {
   ChoiceEntity,
   PlaceV1,
+  PreferencesEntity,
   RotationEntity,
   createOrUpdateChoice,
   createRotation,
@@ -23,6 +24,7 @@ export const PlaceV1Card = (props: {
   place: PlaceV1;
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
+  preferences: PreferencesEntity;
 }) => {
   const { tokens } = useTheme();
   const [url, setUrl] = useState<string>();
@@ -50,6 +52,50 @@ export const PlaceV1Card = (props: {
   const handleSelectOption = async (googlePlaceId: string) => {
     await selectChoice(currentChoice!, googlePlaceId);
   };
+
+  if (props.preferences.compactMode) {
+    <Card key={props.place.place_id} borderRadius="medium" variation="outlined">
+      <Heading display={"inline-block"} margin={tokens.space.small}>
+        {props.place.name}
+      </Heading>
+      {isInRotation ? null : (
+        <Button
+          display={"inline-block"}
+          onClick={() => handleAddToRotation(props.place.place_id)}
+          marginRight={tokens.space.small}
+        >
+          Add to Rotation
+        </Button>
+      )}
+      {currentChoice?.optionPlaceIds?.includes(props.place.place_id) ? (
+        <>
+          <Button
+            display={"inline-block"}
+            onClick={() => handleSelectOption(props.place.place_id)}
+            variation="primary"
+          >
+            Select Option
+          </Button>
+          <Button
+            display={"inline-block"}
+            onClick={() => handleSelectOption(props.place.place_id)}
+            variation="warning"
+          >
+            Remove From Options Option
+          </Button>
+        </>
+      ) : (
+        <Button
+          display={"inline-block"}
+          onClick={() => handleAddToOptions(props.place.place_id)}
+          variation="primary"
+        >
+          Add as an Option
+        </Button>
+      )}
+    </Card>;
+  }
+
   return (
     <Card key={props.place.place_id} borderRadius="medium" variation="outlined">
       <View padding="xs">

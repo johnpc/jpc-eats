@@ -1,5 +1,11 @@
 import { AuthUser } from "aws-amplify/auth";
-import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../entities";
+import {
+  ChoiceEntity,
+  Place,
+  PlaceV1,
+  PreferencesEntity,
+  RotationEntity,
+} from "../entities";
 import { Collection, Heading, Message, useTheme } from "@aws-amplify/ui-react";
 import { PlaceCard } from "./PlaceListPage/PlaceCard";
 import { useEffect, useState } from "react";
@@ -12,6 +18,7 @@ export const RotationPage = (props: {
   placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
+  preferences: PreferencesEntity;
 }) => {
   const { tokens } = useTheme();
   const [rotationPlaces, setRotationPlaces] = useState<Place[]>([]);
@@ -63,6 +70,7 @@ export const RotationPage = (props: {
             place={item}
             rotation={props.rotation}
             choices={props.choices}
+            preferences={props.preferences}
           />
         )}
       </Collection>

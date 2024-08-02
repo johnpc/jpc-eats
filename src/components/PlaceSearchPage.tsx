@@ -1,5 +1,11 @@
 import { AuthUser } from "aws-amplify/auth";
-import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../entities";
+import {
+  ChoiceEntity,
+  Place,
+  PlaceV1,
+  PreferencesEntity,
+  RotationEntity,
+} from "../entities";
 import {
   Card,
   Collection,
@@ -22,6 +28,7 @@ export const PlaceSearchPage = (props: {
   placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
+  preferences: PreferencesEntity;
   loading: boolean;
 }) => {
   const { tokens } = useTheme();
@@ -150,6 +157,7 @@ export const PlaceSearchPage = (props: {
             place={item}
             rotation={props.rotation}
             choices={props.choices}
+            preferences={props.preferences}
           />
         )}
       </Collection>

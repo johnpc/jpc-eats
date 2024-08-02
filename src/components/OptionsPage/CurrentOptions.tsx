@@ -1,5 +1,11 @@
 import { AuthUser } from "aws-amplify/auth";
-import { ChoiceEntity, Place, PlaceV1, RotationEntity } from "../../entities";
+import {
+  ChoiceEntity,
+  Place,
+  PlaceV1,
+  PreferencesEntity,
+  RotationEntity,
+} from "../../entities";
 import { Collection, Heading, Message, useTheme } from "@aws-amplify/ui-react";
 import { useEffect, useState } from "react";
 import config from "../../../amplify_outputs.json";
@@ -12,6 +18,7 @@ export const CurrentOptions = (props: {
   placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
+  preferences: PreferencesEntity;
 }) => {
   const { tokens } = useTheme();
   const [choicePlaces, setChoicePlaces] = useState<Place[]>([]);
@@ -65,6 +72,7 @@ export const CurrentOptions = (props: {
             place={item}
             rotation={props.rotation}
             choices={props.choices}
+            preferences={props.preferences}
           />
         )}
       </Collection>

@@ -14,14 +14,18 @@ import {
   ChoiceEntity,
   Place,
   PlaceV1,
+  PreferencesEntity,
   RotationEntity,
   createChoiceListener,
+  createPreferencesListener,
   createRotationListener,
   deleteRotationListener,
+  getPreferences,
   listChoice,
   listRotation,
   unsubscribeListener,
   updateChoiceListener,
+  updatePreferencesListener,
 } from "./entities";
 import { AuthUser } from "aws-amplify/auth";
 import TabsView from "./components/TabsView";
@@ -32,6 +36,7 @@ function App(props: { user: AuthUser }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [lastOpenTime, setLastOpenTime] = useState<Date>();
   const [places] = useState<Place[]>([]);
+  const [preferences, setPreferences] = useState<PreferencesEntity>({});
   const [placesV1] = useState<PlaceV1[]>([]);
   const [rotation, setRotation] = useState<RotationEntity[]>([]);
   const [choices, setChoices] = useState<ChoiceEntity[]>([]);
@@ -80,12 +85,23 @@ function App(props: { user: AuthUser }) {
         setRotation(newRotation);
       },
     );
-
+    const createPreferencesSubscription = createPreferencesListener(
+      async (preferences: PreferencesEntity) => {
+        setPreferences(preferences);
+      },
+    );
+    const updatePreferencesSubscription = updatePreferencesListener(
+      async (preferences: PreferencesEntity) => {
+        setPreferences(preferences);
+      },
+    );
     return () => {
       unsubscribeListener(createRotationSubscription);
       unsubscribeListener(createChoiceSubscription);
       unsubscribeListener(updateChoiceSubscription);
       unsubscribeListener(deleteRotationSubscription);
+      unsubscribeListener(createPreferencesSubscription);
+      unsubscribeListener(updatePreferencesSubscription);
     };
   }, [choices, rotation, lastOpenTime]);
 
@@ -129,11 +145,22 @@ function App(props: { user: AuthUser }) {
         const choices = await listChoice();
         setChoices(choices);
       };
+
+      const fetchPreferences = async () => {
+        const preferences = await getPreferences();
+        setPreferences(preferences);
+      };
+
       const fetchRotation = async () => {
         const rotation = await listRotation();
         setRotation(rotation);
       };
-      await Promise.all([fetchChoices(), fetchRotation(), fetchGeolocation()]);
+      await Promise.all([
+        fetchChoices(),
+        fetchRotation(),
+        fetchGeolocation(),
+        fetchPreferences(),
+      ]);
       setLoading(false);
     };
     setup();
@@ -152,6 +179,7 @@ function App(props: { user: AuthUser }) {
         choices={choices}
         placesV1={placesV1}
         loading={loading}
+        preferences={preferences}
       />
       <Footer />
     </>

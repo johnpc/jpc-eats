@@ -7,8 +7,13 @@ import {
 } from "@aws-amplify/ui-react";
 import SignOutButton from "./SettingsPage/SignOutButton";
 import { AuthUser } from "aws-amplify/auth";
+import { PreferencesEntity } from "../entities";
+import Preferences from "./SettingsPage/Preferences";
 
-export default function SettingsPage(props: { user: AuthUser }) {
+export default function SettingsPage(props: {
+  user: AuthUser;
+  preferences: PreferencesEntity;
+}) {
   const handleSuccess = () => {
     alert("success!");
   };
@@ -16,6 +21,7 @@ export default function SettingsPage(props: { user: AuthUser }) {
   return (
     <Card>
       <Heading>{props.user.signInDetails?.loginId}</Heading>
+      <Preferences preferences={props.preferences} />
       <AccountSettings.ChangePassword onSuccess={handleSuccess} />
       <Divider style={{ margin: "20px" }} />
       <SignOutButton />
