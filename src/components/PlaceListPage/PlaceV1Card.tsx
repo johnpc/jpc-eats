@@ -30,6 +30,9 @@ export const PlaceV1Card = (props: {
   const [url, setUrl] = useState<string>();
   useEffect(() => {
     const setup = async () => {
+      if (!props.place.photos || props.preferences.compactMode) {
+        return;
+      }
       const getPlaceImageUrl = `${config.custom.getPlaceImageV1Function}?placeName=${props.place.name}&photoId=${props.place.photos[0].photo_reference}&widthPx=${400}&heightPx=${400}`;
       const response = await fetch(getPlaceImageUrl);
       const json = await response.json();

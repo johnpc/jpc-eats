@@ -35,12 +35,13 @@ export const PlaceCard = (props: {
 }) => {
   const { tokens } = useTheme();
   const [selectedUrlIndex, setSelectedUrlIndex] = useState<number>(1);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
   const [photoUrls, setPhotoUrls] = useState<string[]>([
     "https://placehold.co/600x400/EEE/31343C",
   ]);
   useEffect(() => {
     const setup = async () => {
-      if (!props.place.photos) {
+      if (!props.place.photos || props.preferences.compactMode) {
         return;
       }
       // const photoName = props.place.photos[0].name
@@ -62,19 +63,27 @@ export const PlaceCard = (props: {
   }, []);
 
   const handleAddToRotation = async (googlePlaceId: string) => {
+    setIsDisabled(true);
     await createRotation(googlePlaceId);
+    setIsDisabled(false);
   };
 
   const handleRemoveFromRotation = async (rotation: RotationEntity) => {
+    setIsDisabled(true);
     await deleteRotation(rotation);
+    setIsDisabled(false);
   };
 
   const handleAddToOptions = async (googlePlaceId: string) => {
+    setIsDisabled(true);
     await createOrUpdateChoice(googlePlaceId);
+    setIsDisabled(false);
   };
 
   const handleSelectOption = async (googlePlaceId: string) => {
+    setIsDisabled(true);
     await selectChoice(currentChoice!, googlePlaceId);
+    setIsDisabled(false);
   };
 
   const handleNextPage = () => {
@@ -96,7 +105,7 @@ export const PlaceCard = (props: {
 
   const currentChoice = props.choices.find((c) => c.selectedPlaceId === "NONE");
   const rotationIds = props.rotation.map((r) => r.googlePlaceId);
-  const rotation = props.rotation.find((r) => r.googlePlaceId);
+  const rotation = props.rotation.find((r) => r.googlePlaceId === props.place.id);
   const isInRotation = rotationIds.includes(props.place.id);
   const handleRemoveOption = async (googlePlaceId: string) => {
     await updateChoice({
@@ -127,6 +136,7 @@ export const PlaceCard = (props: {
             <Button
               display={"inline-block"}
               size="small"
+              disabled={isDisabled}
               onClick={() => handleRemoveFromRotation(rotation!)}
               variation="destructive"
               marginRight={tokens.space.small}
@@ -137,6 +147,7 @@ export const PlaceCard = (props: {
             <Button
               display={"inline-block"}
               size="small"
+              disabled={isDisabled}
               onClick={() => handleAddToRotation(props.place.id)}
               marginRight={tokens.space.small}
             >
@@ -150,6 +161,7 @@ export const PlaceCard = (props: {
                 marginRight={tokens.space.small}
                 onClick={() => handleSelectOption(props.place.id)}
                 size="small"
+                disabled={isDisabled}
                 variation="primary"
               >
                 <CheckCircleOutlineIcon />
@@ -157,6 +169,7 @@ export const PlaceCard = (props: {
               <Button
                 display={"inline-block"}
                 size="small"
+                disabled={isDisabled}
                 onClick={() => handleRemoveOption(props.place.id)}
                 variation="warning"
               >
@@ -167,6 +180,7 @@ export const PlaceCard = (props: {
             <Button
               display={"inline-block"}
               size="small"
+              disabled={isDisabled}
               onClick={() => handleAddToOptions(props.place.id)}
               variation="primary"
             >
@@ -235,6 +249,7 @@ export const PlaceCard = (props: {
             onClick={() => handleRemoveFromRotation(rotation!)}
             variation="destructive"
             marginRight={tokens.space.small}
+            disabled={isDisabled}
           >
             Remove from Rotation
           </Button>
@@ -242,6 +257,7 @@ export const PlaceCard = (props: {
           <Button
             onClick={() => handleAddToRotation(props.place.id)}
             marginRight={tokens.space.small}
+            disabled={isDisabled}
           >
             Add to Rotation
           </Button>
@@ -252,12 +268,14 @@ export const PlaceCard = (props: {
             <Button
               onClick={() => handleSelectOption(props.place.id)}
               variation="primary"
+              disabled={isDisabled}
             >
               Select Option
             </Button>
             <Button
               onClick={() => handleRemoveOption(props.place.id)}
               variation="warning"
+              disabled={isDisabled}
             >
               Remove Option
             </Button>
@@ -266,6 +284,7 @@ export const PlaceCard = (props: {
           <Button
             onClick={() => handleAddToOptions(props.place.id)}
             variation="primary"
+            disabled={isDisabled}
           >
             Add as an Option
           </Button>

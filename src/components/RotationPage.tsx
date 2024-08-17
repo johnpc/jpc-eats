@@ -41,6 +41,25 @@ export const RotationPage = (props: {
       setup();
     }
   }, [rotationIds]);
+  const uniqueNames: string[] = [];
+  const uniquePlaces: Place[] = rotationPlaces.filter((place: Place) => {
+    if (uniqueNames.includes(place.name)) {
+      return false;
+    }
+    uniqueNames.push(place.name);
+    return true;
+  });
+  uniquePlaces.sort(function (a: Place, b: Place) {
+    if (a.displayName.text < b.displayName.text) {
+      return -1;
+    }
+    if (a.displayName.text > b.displayName.text) {
+      return 1;
+    }
+    return 0;
+  });
+
+  console.log({ uniquePlaces });
 
   return (
     <>
@@ -48,7 +67,7 @@ export const RotationPage = (props: {
         Restaurants in your rotation
       </Heading>
       <Collection
-        items={rotationPlaces}
+        items={uniquePlaces}
         type="list"
         direction="column"
         gap="medium"
