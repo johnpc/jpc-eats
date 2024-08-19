@@ -1,5 +1,7 @@
 import { LambdaFunctionURLEvent, LambdaFunctionURLResult } from "aws-lambda";
 import crypto from "crypto";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { env } from "$amplify/env/get-place-image";
 // const env = {} as any;
 import {
