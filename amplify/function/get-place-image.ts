@@ -1,8 +1,6 @@
 import { LambdaFunctionURLEvent, LambdaFunctionURLResult } from "aws-lambda";
 import crypto from "crypto";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { env } from "$amplify/env/get-place-image";
+import { env } from "$amplify/env/get-place";
 // const env = {} as any;
 import {
   S3Client,
