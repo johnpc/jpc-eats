@@ -1,7 +1,7 @@
 import { defineBackend, defineFunction } from "@aws-amplify/backend";
 import { Function, FunctionUrlAuthType } from "aws-cdk-lib/aws-lambda";
-import { CfnMap } from "aws-cdk-lib/aws-location";
-import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+// import { CfnMap } from "aws-cdk-lib/aws-location";
+// import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
@@ -78,57 +78,57 @@ backend.addOutput({
   custom: outputs,
 });
 
-const geoStack = backend.createStack("geo-stack");
+// const geoStack = backend.createStack("geo-stack");
 
 // create a location services map
-const map = new CfnMap(geoStack, "Map", {
-  mapName: process.env.MAP_NAME!,
-  description: "Map",
-  configuration: {
-    style: "VectorEsriNavigation",
-  },
-  pricingPlan: "RequestBasedUsage",
-  tags: [
-    {
-      key: "name",
-      value: process.env.MAP_NAME!,
-    },
-  ],
-});
+// const map = new CfnMap(geoStack, "Map", {
+//   mapName: process.env.MAP_NAME!,
+//   description: "Map",
+//   configuration: {
+//     style: "VectorEsriNavigation",
+//   },
+//   pricingPlan: "RequestBasedUsage",
+//   tags: [
+//     {
+//       key: "name",
+//       value: process.env.MAP_NAME!,
+//     },
+//   ],
+// });
 
 // create an IAM policy to allow interacting with geo resource
-const myGeoPolicy = new Policy(geoStack, "GeoPolicy", {
-  policyName: "myGeoPolicy",
-  statements: [
-    new PolicyStatement({
-      actions: [
-        "geo:GetMapTile",
-        "geo:GetMapSprites",
-        "geo:GetMapGlyphs",
-        "geo:GetMapStyleDescriptor",
-      ],
-      resources: [map.attrArn],
-    }),
-  ],
-});
+// const myGeoPolicy = new Policy(geoStack, "GeoPolicy", {
+//   policyName: "myGeoPolicy",
+//   statements: [
+//     new PolicyStatement({
+//       actions: [
+//         "geo:GetMapTile",
+//         "geo:GetMapSprites",
+//         "geo:GetMapGlyphs",
+//         "geo:GetMapStyleDescriptor",
+//       ],
+//       resources: [map.attrArn],
+//     }),
+//   ],
+// });
 
 // apply the policy to the authenticated and unauthenticated roles
-backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(myGeoPolicy);
-backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(
-  myGeoPolicy,
-);
+// backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(myGeoPolicy);
+// backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(
+//   myGeoPolicy,
+// );
 
 // patch the map resource to the expected output configuration
-backend.addOutput({
-  geo: {
-    aws_region: geoStack.region,
-    maps: {
-      items: {
-        [map.mapName]: {
-          style: "VectorEsriNavigation",
-        },
-      },
-      default: map.mapName,
-    },
-  },
-});
+// backend.addOutput({
+//   geo: {
+//     aws_region: geoStack.region,
+//     maps: {
+//       items: {
+//         [map.mapName]: {
+//           style: "VectorEsriNavigation",
+//         },
+//       },
+//       default: map.mapName,
+//     },
+//   },
+// });
