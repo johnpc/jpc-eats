@@ -92,6 +92,39 @@ export const PlaceSearchPage = (props: {
     {
       title: "Mediterranean Food",
     },
+    {
+      title: "Burgers",
+    },
+    {
+      title: "Sandwiches",
+    },
+    {
+      title: "Healthy Food",
+    },
+    {
+      title: "Bubble Tea",
+    },
+    {
+      title: "Dessert",
+    },
+    {
+      title: "Ice Cream",
+    },
+    {
+      title: "Salad",
+    },
+    {
+      title: "Vegan Food",
+    },
+    {
+      title: "Snacks",
+    },
+    {
+      title: "Diners",
+    },
+    {
+      title: "Coffee Shops",
+    },
   ];
   return (
     <>
