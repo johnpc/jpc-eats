@@ -7,6 +7,7 @@ import {
   Button,
   useTheme,
   Pagination,
+  Link,
 } from "@aws-amplify/ui-react";
 import {
   ChoiceEntity,
@@ -105,7 +106,9 @@ export const PlaceCard = (props: {
 
   const currentChoice = props.choices.find((c) => c.selectedPlaceId === "NONE");
   const rotationIds = props.rotation.map((r) => r.googlePlaceId);
-  const rotation = props.rotation.find((r) => r.googlePlaceId === props.place.id);
+  const rotation = props.rotation.find(
+    (r) => r.googlePlaceId === props.place.id,
+  );
   const isInRotation = rotationIds.includes(props.place.id);
   const handleRemoveOption = async (googlePlaceId: string) => {
     await updateChoice({
@@ -128,7 +131,9 @@ export const PlaceCard = (props: {
             textAlign={"left"}
             margin={tokens.space.small}
           >
-            {props.place.displayName.text}
+            <Link href={props.place.websiteUri}>
+              {props.place.displayName.text}
+            </Link>
           </Heading>
         </View>
         <View textAlign={"right"} width={"60%"} display={"inline-block"}>
@@ -215,7 +220,9 @@ export const PlaceCard = (props: {
             {props.place.delivery ? "Delivery" : "No Delivery"}
           </Badge> */}
           <Heading margin={tokens.space.small}>
-            {props.place.displayName.text}
+            <Link href={props.place.websiteUri}>
+              {props.place.displayName.text}
+            </Link>
           </Heading>
           {/* <Text>{props.place.shortFormattedAddress}</Text> */}
           <Text margin={tokens.space.small} fontSize={"small"}>

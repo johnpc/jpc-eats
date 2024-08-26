@@ -125,6 +125,36 @@ export const PlaceSearchPage = (props: {
     {
       title: "Coffee Shops",
     },
+    {
+      title: "Bars",
+    },
+    {
+      title: "Brewery",
+    },
+    {
+      title: "Breakfast",
+    },
+    {
+      title: "Wings",
+    },
+    {
+      title: "Deli",
+    },
+    {
+      title: "Food Truck",
+    },
+    {
+      title: "Buffet",
+    },
+    {
+      title: "Wine Bar",
+    },
+    {
+      title: "Tacos",
+    },
+    {
+      title: "Brunch",
+    },
   ];
   return (
     <>
