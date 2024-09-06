@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import {
   ChoiceEntity,
   Place,
-  PlaceV1,
   PreferencesEntity,
   RotationEntity,
   createChoiceListener,
@@ -37,7 +36,6 @@ function App(props: { user: AuthUser }) {
   const [lastOpenTime, setLastOpenTime] = useState<Date>();
   const [places] = useState<Place[]>([]);
   const [preferences, setPreferences] = useState<PreferencesEntity>({});
-  const [placesV1] = useState<PlaceV1[]>([]);
   const [rotation, setRotation] = useState<RotationEntity[]>([]);
   const [choices, setChoices] = useState<ChoiceEntity[]>([]);
   const [youAreHere, setYouAreHere] = useState<{
@@ -87,12 +85,12 @@ function App(props: { user: AuthUser }) {
     );
     const createPreferencesSubscription = createPreferencesListener(
       async (preferences: PreferencesEntity) => {
-        setPreferences(preferences);
+        setPreferences({ ...preferences, compactMode: true });
       },
     );
     const updatePreferencesSubscription = updatePreferencesListener(
       async (preferences: PreferencesEntity) => {
-        setPreferences(preferences);
+        setPreferences({ ...preferences, compactMode: true });
       },
     );
     return () => {
@@ -148,7 +146,7 @@ function App(props: { user: AuthUser }) {
 
       const fetchPreferences = async () => {
         const preferences = await getPreferences();
-        setPreferences(preferences);
+        setPreferences({ ...preferences, compactMode: true });
       };
 
       const fetchRotation = async () => {
@@ -177,7 +175,6 @@ function App(props: { user: AuthUser }) {
         places={places}
         rotation={rotation}
         choices={choices}
-        placesV1={placesV1}
         loading={loading}
         preferences={preferences}
       />

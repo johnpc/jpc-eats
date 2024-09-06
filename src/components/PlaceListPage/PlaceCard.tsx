@@ -20,13 +20,15 @@ import {
   selectChoice,
   updateChoice,
 } from "../../entities";
-import config from "../../../amplify_outputs.json";
 import { useEffect, useState } from "react";
 import UpdateDisabledIcon from "@mui/icons-material/UpdateDisabled";
 import UpdateIcon from "@mui/icons-material/Update";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { Schema } from "../../../amplify/data/resource";
+import { generateClient } from "aws-amplify/api";
+const client = generateClient<Schema>();
 
 export const PlaceCard = (props: {
   place: Place;
@@ -45,18 +47,18 @@ export const PlaceCard = (props: {
       if (!props.place.photos || props.preferences.compactMode) {
         return;
       }
-      // const photoName = props.place.photos[0].name
-      // const getPlaceImageUrl = `${config.custom.getPlaceImageFunction}?placeName=${props.place.name}&photoId=${photoName}&widthPx=${400}&heightPx=${400}`;
-      // const response = await fetch(getPlaceImageUrl);
-      // const json = await response.json();
-      // setPhotoUrls([json.photoUri]);
 
-      const urlPromises = (props.place.photos ?? []).map(async (photoId) => {
-        const getPlaceImageUrl = `${config.custom.getPlaceImageFunction}?placeName=${props.place.name}&photoId=${photoId.name}&widthPx=${400}&heightPx=${400}`;
-        const response = await fetch(getPlaceImageUrl);
-        const json = await response.json();
-        return json.photoUri;
-      });
+      const urlPromises = (props.place.photos ?? []).map(
+        async (photoId: { name: string }) => {
+          console.log({ photoId });
+          const response = await client.queries.getGooglePlaceImage({
+            photoId: photoId.name,
+            heightPx: 400,
+            widthPx: 400,
+          });
+          return response.data!.photoUri;
+        },
+      );
       const urls = await Promise.all(urlPromises);
       setPhotoUrls(urls);
     };

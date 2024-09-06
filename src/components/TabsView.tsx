@@ -3,7 +3,6 @@ import { AuthUser } from "aws-amplify/auth";
 import {
   ChoiceEntity,
   Place,
-  PlaceV1,
   PreferencesEntity,
   RotationEntity,
 } from "../entities";
@@ -16,7 +15,6 @@ export default function TabsView(props: {
   user: AuthUser;
   youAreHere: { latitude: number; longitude: number };
   places: Place[];
-  placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;

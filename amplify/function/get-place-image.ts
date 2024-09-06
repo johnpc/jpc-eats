@@ -1,12 +1,11 @@
-import { LambdaFunctionURLEvent, LambdaFunctionURLResult } from "aws-lambda";
 import crypto from "crypto";
-import { env } from "$amplify/env/get-place";
-// const env = {} as any;
+import { env } from "$amplify/env/get-google-place";
 import {
   S3Client,
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { Schema } from "../data/resource";
 
 const { GOOGLE_PLACES_API_KEY } = process.env;
 const GOOGLE_PLACES_API_URL = "https://places.googleapis.com/v1";
@@ -32,10 +31,8 @@ const getPresignedUrl = async (key: string) => {
   console.log({ stringFromCharCode });
   const base64String = btoa(stringFromCharCode);
 
-  // const base64String = btoa(bodyString);
   console.log({ base64String });
   return `data:image/png;base64,${base64String}`;
-  // return getSignedUrl(client, command, { expiresIn: 3600 });
 };
 
 const uploadFile = async (key: string, payload: Buffer) => {
@@ -90,26 +87,23 @@ export const getImageBase64 = async (
   }
 };
 
-export const handler = async (event: LambdaFunctionURLEvent) => {
+export const handler: Schema["getGooglePlaceImage"]["functionHandler"] = async (
+  event,
+) => {
   console.log({ event });
-  const photoId = event.queryStringParameters?.photoId;
-  const widthPx = event.queryStringParameters?.widthPx;
-  const heightPx = event.queryStringParameters?.heightPx;
+  const photoId = event.arguments.photoId;
+  const widthPx = event.arguments.widthPx;
+  const heightPx = event.arguments.heightPx;
 
   const photoUri = await getImageBase64(
     photoId!,
-    widthPx ? parseInt(widthPx) : undefined,
-    heightPx ? parseInt(heightPx) : undefined,
+    widthPx ? widthPx : undefined,
+    heightPx ? heightPx : undefined,
     true,
   );
-  const response: LambdaFunctionURLResult = {
-    statusCode: 200,
-    body: JSON.stringify({
-      name: photoId,
-      photoUri: photoUri,
-      fromCache: true,
-    }),
+  return {
+    name: photoId,
+    photoUri: photoUri,
+    fromCache: true,
   };
-
-  return response;
 };

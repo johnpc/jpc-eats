@@ -2,7 +2,6 @@ import { AuthUser } from "aws-amplify/auth";
 import {
   ChoiceEntity,
   Place,
-  PlaceV1,
   PreferencesEntity,
   RotationEntity,
 } from "../entities";
@@ -14,7 +13,6 @@ export const OptionsPage = (props: {
   user: AuthUser;
   youAreHere?: { latitude: number; longitude: number };
   places: Place[];
-  placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;

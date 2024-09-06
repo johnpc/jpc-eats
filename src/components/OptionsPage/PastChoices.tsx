@@ -2,19 +2,19 @@ import { AuthUser } from "aws-amplify/auth";
 import {
   ChoiceEntity,
   Place,
-  PlaceV1,
   PreferencesEntity,
   RotationEntity,
 } from "../../entities";
 import { useEffect, useState } from "react";
-import config from "../../../amplify_outputs.json";
 import { Card, Text } from "@aws-amplify/ui-react";
+import { Schema } from "../../../amplify/data/resource";
+import { generateClient } from "aws-amplify/api";
+const client = generateClient<Schema>();
 
 export const PastChoices = (props: {
   user: AuthUser;
   youAreHere?: { latitude: number; longitude: number };
   places: Place[];
-  placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;
@@ -25,13 +25,11 @@ export const PastChoices = (props: {
     { selected: Place; options: Place[]; choice: ChoiceEntity }[]
   >([]);
   useEffect(() => {
-    const getPlaceJson = async (id: string) => {
-      const response = await fetch(
-        `${config.custom.getPlaceFunction}?placeId=${id}`,
-      );
-      const json = await response.json();
-      console.log({ json });
-      return json;
+    const getPlaceJson = async (id: string): Promise<Place> => {
+      const response = await client.queries.getGooglePlace({
+        placeId: id,
+      });
+      return response.data as unknown as Place;
     };
 
     const setup = async () => {
@@ -65,20 +63,24 @@ export const PastChoices = (props: {
             new Date(b.choice.updatedAt!).getTime() -
             new Date(a.choice.updatedAt!).getTime(),
         )
-        .map((selectedPlace) => {
+        .map((selectedPlace, index) => {
           return (
-            <Card key={selectedPlace.selected.id}>
+            <Card key={`${selectedPlace.selected.id}-${index}`}>
               <Text>
                 Selected{" "}
                 <span style={{ fontWeight: "bold" }}>
-                  {selectedPlace?.selected.displayName.text}
+                  {selectedPlace?.selected?.displayName.text}
                 </span>{" "}
                 on{" "}
                 {new Date(selectedPlace.choice.updatedAt!).toLocaleDateString()}
               </Text>
-              {selectedPlace.options.map((option) => (
-                <li>{option.displayName.text}</li>
-              ))}
+              {selectedPlace.options.map((option, idx) => {
+                return (
+                  <li key={`${option?.id}-${index}-${idx}`}>
+                    {option?.displayName?.text}
+                  </li>
+                );
+              })}
             </Card>
           );
         })}

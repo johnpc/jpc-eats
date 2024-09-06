@@ -8,27 +8,6 @@ const client = generateClient<Schema>({
   authMode: "userPool",
 });
 
-export type PlaceV1 = {
-  icon: string;
-  icon_background_color: string;
-  icon_mask_base_uri: string;
-  name: string;
-  opening_hours: {
-    open_now: boolean;
-  };
-  photos: {
-    height: number;
-    width: number;
-    photo_reference: string;
-  }[];
-  place_id: string;
-  price_level: number;
-  rating: number;
-  reference: string;
-  types: string[];
-  vicinity: string;
-};
-
 export type RotationEntity = {
   id: string;
   googlePlaceId: string;

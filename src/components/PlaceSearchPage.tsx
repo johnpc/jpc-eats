@@ -2,7 +2,6 @@ import { AuthUser } from "aws-amplify/auth";
 import {
   ChoiceEntity,
   Place,
-  PlaceV1,
   PreferencesEntity,
   RotationEntity,
 } from "../entities";
@@ -18,14 +17,15 @@ import {
 } from "@aws-amplify/ui-react";
 import { PlaceCard } from "./PlaceListPage/PlaceCard";
 import { useEffect, useState } from "react";
-import config from "../../amplify_outputs.json";
 import { useDebounce } from "use-debounce";
+import { generateClient } from "aws-amplify/api";
+import { Schema } from "../../amplify/data/resource";
+const client = generateClient<Schema>();
 
 export const PlaceSearchPage = (props: {
   user: AuthUser;
   youAreHere: { latitude: number; longitude: number };
   places: Place[];
-  placesV1: PlaceV1[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;
@@ -40,18 +40,14 @@ export const PlaceSearchPage = (props: {
     const setup = async () => {
       setLoading(true);
       setPlaces([]);
-      const responseSearch = await fetch(config.custom.searchPlacesFunction, {
-        body: JSON.stringify({
-          latitude: props.youAreHere.latitude,
-          longitude: props.youAreHere.longitude,
-          search: searchValue,
-        }),
-        method: "POST",
+      const responseSearch = await client.queries.searchGooglePlaces({
+        latitude: props.youAreHere.latitude,
+        longitude: props.youAreHere.longitude,
+        search: searchValue,
       });
 
-      const jsonSearch = await responseSearch.json();
-      console.log({ jsonSearch });
-      setPlaces(jsonSearch.places);
+      console.log({ jsonSearch: responseSearch.data });
+      setPlaces(responseSearch.data as unknown as Place[]);
       setLoading(false);
     };
     setup();
