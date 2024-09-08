@@ -6,7 +6,6 @@ const GOOGLE_PLACES_API_URL =
 import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/api";
 import { Schema } from "../../amplify/data/resource";
-import { getImageBase64 } from "./get-place-image";
 import { env } from "$amplify/env/search-google-places";
 import { listGoogleApiCacheByHash } from "./queries";
 import { createGoogleApiCache } from "./mutations";
@@ -137,9 +136,9 @@ export const handler: Schema["searchGooglePlaces"]["functionHandler"] = async (
 
   const hydratedPlacePromises = (placesApiResponseJson.places ?? []).map(
     async (place) => {
-      const imagePromises = (place.photos ?? []).map(async (photo) => {
+      const imagePromises = (place.photos ?? []).map(async () => {
         try {
-          return await getImageBase64(photo.name);
+          // return await getImageBase64(photo.name);
         } catch (e) {
           console.log("Failed to getImageBase64 for " + place.photos[0].name);
           console.warn(e);
