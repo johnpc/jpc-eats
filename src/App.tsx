@@ -1,7 +1,6 @@
 import {
   Heading,
   Image,
-  Loader,
   View,
   useTheme,
   withAuthenticator,
@@ -12,7 +11,6 @@ import { App as CapacitorApp } from "@capacitor/app";
 import { useEffect, useState } from "react";
 import {
   ChoiceEntity,
-  Place,
   PreferencesEntity,
   RotationEntity,
   createChoiceListener,
@@ -31,21 +29,24 @@ import TabsView from "./components/TabsView";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 
+
 function App(props: { user: AuthUser }) {
-  const [loading, setLoading] = useState<boolean>(true);
   const [lastOpenTime, setLastOpenTime] = useState<Date>();
-  const [places] = useState<Place[]>([]);
-  const [preferences, setPreferences] = useState<PreferencesEntity>({});
-  const [rotation, setRotation] = useState<RotationEntity[]>([]);
-  const [choices, setChoices] = useState<ChoiceEntity[]>([]);
+  const [preferences, setPreferences] = useState<PreferencesEntity>(localStorage.getItem("preferences") ? JSON.parse(localStorage.getItem("preferences")!) : {});
+  const [rotation, setRotation] = useState<RotationEntity[]>(localStorage.getItem("rotation") ? JSON.parse(localStorage.getItem("rotation")!) : []);
+  const [choices, setChoices] = useState<ChoiceEntity[]>(localStorage.getItem("choices") ? JSON.parse(localStorage.getItem("choices")!) : []);
   const [youAreHere, setYouAreHere] = useState<{
     latitude: number;
     longitude: number;
-  }>({
+  }>(
+    localStorage.getItem("coordinates") ? JSON.parse(localStorage.getItem("coordinates")!)
+    : {
     // Default to ann arbor
     latitude: 42.280827,
     longitude: -83.743034,
   });
+
+  console.log({youAreHere});
 
   useEffect(() => {
     CapacitorApp.addListener("resume", () => {
@@ -105,8 +106,6 @@ function App(props: { user: AuthUser }) {
 
   useEffect(() => {
     const setup = async () => {
-      setLoading(true);
-
       const fetchGeolocation = async () => {
         let coordinates: Position | undefined;
         try {
@@ -133,6 +132,7 @@ function App(props: { user: AuthUser }) {
         }
 
         console.log({ coordinates });
+        localStorage.setItem("coordinates", JSON.stringify(coordinates))
         setYouAreHere({
           latitude: coordinates!.coords.latitude,
           longitude: coordinates!.coords.longitude,
@@ -141,16 +141,19 @@ function App(props: { user: AuthUser }) {
 
       const fetchChoices = async () => {
         const choices = await listChoice();
+        localStorage.setItem("choices", JSON.stringify(choices))
         setChoices(choices);
       };
 
       const fetchPreferences = async () => {
         const preferences = await getPreferences();
+        localStorage.setItem("preferences", JSON.stringify(preferences))
         setPreferences({ ...preferences, compactMode: true });
       };
 
       const fetchRotation = async () => {
         const rotation = await listRotation();
+        localStorage.setItem("rotation", JSON.stringify(rotation))
         setRotation(rotation);
       };
       await Promise.all([
@@ -159,12 +162,9 @@ function App(props: { user: AuthUser }) {
         fetchGeolocation(),
         fetchPreferences(),
       ]);
-      setLoading(false);
     };
     setup();
   }, []);
-
-  if (loading) return <Loader variation="linear" />;
 
   return (
     <>
@@ -172,10 +172,8 @@ function App(props: { user: AuthUser }) {
       <TabsView
         user={props.user}
         youAreHere={youAreHere}
-        places={places}
         rotation={rotation}
         choices={choices}
-        loading={loading}
         preferences={preferences}
       />
       <Footer />

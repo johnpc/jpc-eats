@@ -25,21 +25,18 @@ const client = generateClient<Schema>();
 export const PlaceSearchPage = (props: {
   user: AuthUser;
   youAreHere: { latitude: number; longitude: number };
-  places: Place[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;
-  loading: boolean;
 }) => {
   const { tokens } = useTheme();
   const [search, setSearch] = useState<string>("food");
   const [searchValue] = useDebounce(search, 500);
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [loading, setLoading] = useState<boolean>(props.loading);
+  const defaultPlaces = localStorage.getItem("places") ? JSON.parse(localStorage.getItem("places")!) : []
+  const [places, setPlaces] = useState<Place[]>(defaultPlaces);
+  const [loading, setLoading] = useState<boolean>(defaultPlaces.length === 0);
   useEffect(() => {
     const setup = async () => {
-      setLoading(true);
-      setPlaces([]);
       const responseSearch = await client.queries.searchGooglePlaces({
         latitude: props.youAreHere.latitude,
         longitude: props.youAreHere.longitude,
@@ -47,18 +44,23 @@ export const PlaceSearchPage = (props: {
       });
 
       console.log({ jsonSearch: responseSearch.data });
+      localStorage.setItem("places", JSON.stringify(responseSearch.data))
       setPlaces(responseSearch.data as unknown as Place[]);
       setLoading(false);
     };
     setup();
-  }, [searchValue]);
+  }, [props.youAreHere, searchValue]);
 
+  const handleSetSearch = (value: string) => {
+    setLoading(true);
+    setSearch(value);
+  }
   const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = async (
     e,
   ) => {
     console.log({ value: e.target.value });
     if (e.target.value !== search) {
-      setSearch(e.target.value);
+      handleSetSearch(e.target.value);
     }
   };
   const debouncedOnChange = handleSearchChange;
@@ -168,7 +170,7 @@ export const PlaceSearchPage = (props: {
           {(item, index) => (
             <Card
               paddingTop={tokens.space.medium}
-              onClick={() => setSearch(item.title)}
+              onClick={() => handleSetSearch(item.title)}
               key={index}
               borderRadius="small"
               variation="elevated"
@@ -189,6 +191,7 @@ export const PlaceSearchPage = (props: {
         hasSearchButton={false}
         onChange={debouncedOnChange}
       />
+      {loading ? <Loader variation="linear" /> : null}
       <Collection
         items={places}
         type="list"
@@ -203,7 +206,7 @@ export const PlaceSearchPage = (props: {
             heading={loading ? "Loading..." : "No places found"}
           >
             {loading ? (
-              <Loader variation="linear" />
+              null
             ) : (
               "No restaurants near you were found. Reach out to support for more information."
             )}

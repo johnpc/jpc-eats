@@ -2,7 +2,6 @@ import { Tabs } from "@aws-amplify/ui-react";
 import { AuthUser } from "aws-amplify/auth";
 import {
   ChoiceEntity,
-  Place,
   PreferencesEntity,
   RotationEntity,
 } from "../entities";
@@ -14,11 +13,9 @@ import { PlaceSearchPage } from "./PlaceSearchPage";
 export default function TabsView(props: {
   user: AuthUser;
   youAreHere: { latitude: number; longitude: number };
-  places: Place[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;
-  loading: boolean;
 }) {
   return (
     <>

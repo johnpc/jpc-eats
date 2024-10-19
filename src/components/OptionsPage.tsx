@@ -1,7 +1,6 @@
 import { AuthUser } from "aws-amplify/auth";
 import {
   ChoiceEntity,
-  Place,
   PreferencesEntity,
   RotationEntity,
 } from "../entities";
@@ -12,7 +11,6 @@ import { Divider } from "@aws-amplify/ui-react";
 export const OptionsPage = (props: {
   user: AuthUser;
   youAreHere?: { latitude: number; longitude: number };
-  places: Place[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;

@@ -15,7 +15,6 @@ const client = generateClient<Schema>();
 export const RotationPage = (props: {
   user: AuthUser;
   youAreHere?: { latitude: number; longitude: number };
-  places: Place[];
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;
