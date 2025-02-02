@@ -243,10 +243,10 @@ export const PlaceCard = (props: {
             />
           </View>
         )}
-        {photoUrls.length <= 1 ? null : (
+        {(photoUrls ?? []).length <= 1 ? null : (
           <Pagination
             currentPage={selectedUrlIndex}
-            totalPages={photoUrls.length}
+            totalPages={(photoUrls ?? []).length}
             siblingCount={1}
             onNext={handleNextPage}
             onPrevious={handlePreviousPage}

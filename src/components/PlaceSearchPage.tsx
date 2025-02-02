@@ -34,7 +34,7 @@ export const PlaceSearchPage = (props: {
   const [searchValue] = useDebounce(search, 500);
   const defaultPlaces = localStorage.getItem("places") ? JSON.parse(localStorage.getItem("places")!) : []
   const [places, setPlaces] = useState<Place[]>(defaultPlaces);
-  const [loading, setLoading] = useState<boolean>(defaultPlaces.length === 0);
+  const [loading, setLoading] = useState<boolean>((defaultPlaces ?? []).length === 0);
   useEffect(() => {
     const setup = async () => {
       const responseSearch = await client.queries.searchGooglePlaces({

@@ -49,7 +49,7 @@ export const PastChoices = (props: {
       console.log({ selectedPlaces });
       setSelectedPlaces(selectedPlaces);
     };
-    if (selectedOptions.length !== selectedPlaces.length) {
+    if (selectedOptions?.length !== selectedPlaces?.length) {
       setup();
     }
   }, [props.choices]);

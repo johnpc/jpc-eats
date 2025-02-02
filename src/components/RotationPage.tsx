@@ -34,7 +34,7 @@ export const RotationPage = (props: {
       console.log({ places });
       setRotationPlaces(places as unknown as Place[]);
     };
-    if (rotationIds.length !== rotationPlaces.length) {
+    if ((rotationIds ?? []).length !== (rotationPlaces ?? []).length) {
       setup();
     }
   }, [rotationIds]);

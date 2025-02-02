@@ -38,7 +38,7 @@ export const CurrentOptions = (props: {
       console.log({ optionPlaces });
       setChoicePlaces(optionPlaces as unknown as Place[]);
     };
-    if (currentChoice?.optionPlaceIds.length !== choicePlaces.length) {
+    if (currentChoice?.optionPlaceIds?.length !== (choicePlaces ?? []).length) {
       setup();
     }
   }, [props.choices]);
