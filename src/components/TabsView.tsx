@@ -1,10 +1,6 @@
 import { Tabs } from "@aws-amplify/ui-react";
 import { AuthUser } from "aws-amplify/auth";
-import {
-  ChoiceEntity,
-  PreferencesEntity,
-  RotationEntity,
-} from "../entities";
+import { ChoiceEntity, PreferencesEntity, RotationEntity } from "../entities";
 import { OptionsPage } from "./OptionsPage";
 import SettingsPage from "./SettingsPage";
 import { RotationPage } from "./RotationPage";
@@ -16,6 +12,7 @@ export default function TabsView(props: {
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;
+  refreshData: () => Promise<any>;
 }) {
   return (
     <>
@@ -23,6 +20,11 @@ export default function TabsView(props: {
         justifyContent="flex-start"
         spacing="equal"
         defaultValue="Search"
+        onChange={(nextTab) => {
+          // Refresh data when switching tabs to ensure latest data
+          console.log("Tab changed to:", nextTab);
+          props.refreshData();
+        }}
         items={[
           {
             label: "Search",

@@ -32,9 +32,13 @@ export const PlaceSearchPage = (props: {
   const { tokens } = useTheme();
   const [search, setSearch] = useState<string>("food");
   const [searchValue] = useDebounce(search, 500);
-  const defaultPlaces = localStorage.getItem("places") ? JSON.parse(localStorage.getItem("places")!) : []
+  const defaultPlaces = localStorage.getItem("places")
+    ? JSON.parse(localStorage.getItem("places")!)
+    : [];
   const [places, setPlaces] = useState<Place[]>(defaultPlaces);
-  const [loading, setLoading] = useState<boolean>((defaultPlaces ?? []).length === 0);
+  const [loading, setLoading] = useState<boolean>(
+    (defaultPlaces ?? []).length === 0,
+  );
   useEffect(() => {
     const setup = async () => {
       const responseSearch = await client.queries.searchGooglePlaces({
@@ -44,7 +48,7 @@ export const PlaceSearchPage = (props: {
       });
 
       console.log({ jsonSearch: responseSearch.data });
-      localStorage.setItem("places", JSON.stringify(responseSearch.data))
+      localStorage.setItem("places", JSON.stringify(responseSearch.data));
       setPlaces(responseSearch.data as unknown as Place[]);
       setLoading(false);
     };
@@ -54,7 +58,7 @@ export const PlaceSearchPage = (props: {
   const handleSetSearch = (value: string) => {
     setLoading(true);
     setSearch(value);
-  }
+  };
   const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = async (
     e,
   ) => {
@@ -205,11 +209,9 @@ export const PlaceSearchPage = (props: {
             marginBottom={tokens.space.medium}
             heading={loading ? "Loading..." : "No places found"}
           >
-            {loading ? (
-              null
-            ) : (
-              "No restaurants near you were found. Reach out to support for more information."
-            )}
+            {loading
+              ? null
+              : "No restaurants near you were found. Reach out to support for more information."}
           </Message>
         }
       >

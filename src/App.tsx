@@ -8,7 +8,7 @@ import {
 import { Geolocation, Position } from "@capacitor/geolocation";
 import { App as CapacitorApp } from "@capacitor/app";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   ChoiceEntity,
   PreferencesEntity,
@@ -20,6 +20,7 @@ import {
   getPreferences,
   listChoice,
   listRotation,
+  triggerRefresh,
   unsubscribeListener,
   updateChoiceListener,
   updatePreferencesListener,
@@ -29,72 +30,178 @@ import TabsView from "./components/TabsView";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 
-
 function App(props: { user: AuthUser }) {
   const [lastOpenTime, setLastOpenTime] = useState<Date>();
-  const [preferences, setPreferences] = useState<PreferencesEntity>(localStorage.getItem("preferences") ? JSON.parse(localStorage.getItem("preferences")!) : {});
-  const [rotation, setRotation] = useState<RotationEntity[]>(localStorage.getItem("rotation") ? JSON.parse(localStorage.getItem("rotation")!) : []);
-  const [choices, setChoices] = useState<ChoiceEntity[]>(localStorage.getItem("choices") ? JSON.parse(localStorage.getItem("choices")!) : []);
+  const [preferences, setPreferences] = useState<PreferencesEntity>(
+    localStorage.getItem("preferences")
+      ? JSON.parse(localStorage.getItem("preferences")!)
+      : {},
+  );
+  const [rotation, setRotation] = useState<RotationEntity[]>(
+    localStorage.getItem("rotation")
+      ? JSON.parse(localStorage.getItem("rotation")!)
+      : [],
+  );
+  const [choices, setChoices] = useState<ChoiceEntity[]>(
+    localStorage.getItem("choices")
+      ? JSON.parse(localStorage.getItem("choices")!)
+      : [],
+  );
   const [youAreHere, setYouAreHere] = useState<{
     latitude: number;
     longitude: number;
   }>(
-    localStorage.getItem("coordinates") ? JSON.parse(localStorage.getItem("coordinates")!)
-    : {
-    // Default to ann arbor
-    latitude: 42.280827,
-    longitude: -83.743034,
-  });
+    localStorage.getItem("coordinates")
+      ? JSON.parse(localStorage.getItem("coordinates")!)
+      : {
+          // Default to ann arbor
+          latitude: 42.280827,
+          longitude: -83.743034,
+        },
+  );
 
-  console.log({youAreHere});
+  console.log({ youAreHere });
+
+  // Add a direct refresh function to force data reload
+  const refreshAllData = useCallback(async () => {
+    try {
+      console.log("Manually refreshing all data...");
+      const [rotationData, choicesData, preferencesData] = await Promise.all([
+        listRotation(),
+        listChoice(),
+        getPreferences(),
+      ]);
+
+      console.log("Fresh data received:", {
+        rotation: rotationData,
+        choices: choicesData,
+        preferences: preferencesData,
+      });
+
+      setRotation(rotationData);
+      setChoices(choicesData);
+      setPreferences(preferencesData);
+
+      localStorage.setItem("rotation", JSON.stringify(rotationData));
+      localStorage.setItem("choices", JSON.stringify(choicesData));
+      localStorage.setItem("preferences", JSON.stringify(preferencesData));
+
+      // Trigger global refresh to update all components
+      triggerRefresh();
+
+      console.log("Manual data refresh complete");
+      return {
+        rotation: rotationData,
+        choices: choicesData,
+        preferences: preferencesData,
+      };
+    } catch (error) {
+      console.error("Error during manual data refresh:", error);
+      throw error;
+    }
+  }, []);
 
   useEffect(() => {
     CapacitorApp.addListener("resume", () => {
       setLastOpenTime(new Date());
+      refreshAllData(); // Refresh data when app resumes
     });
     return () => {
       CapacitorApp.removeAllListeners();
     };
-  }, []);
+  }, [refreshAllData]);
 
   useEffect(() => {
     const createRotationSubscription = createRotationListener(
       async (rotationItem: RotationEntity) => {
-        const newRotation = [...rotation, rotationItem];
-        setRotation(newRotation);
+        console.log("Rotation item created:", rotationItem);
+        // Use a function to update state based on previous state to avoid race conditions
+        setRotation((prevRotation) => {
+          // Check if item already exists to prevent duplicates
+          if (!prevRotation.some((item) => item.id === rotationItem.id)) {
+            const newRotation = [...prevRotation, rotationItem];
+            localStorage.setItem("rotation", JSON.stringify(newRotation));
+            return newRotation;
+          }
+          return prevRotation;
+        });
+
+        // Force a full refresh to ensure consistency
+        setTimeout(() => refreshAllData(), 500);
       },
     );
     const createChoiceSubscription = createChoiceListener(
       async (choiceItem: ChoiceEntity) => {
-        const newChoices = [...choices, choiceItem];
-        setChoices(newChoices);
+        console.log("Choice item created:", choiceItem);
+        setChoices((prevChoices) => {
+          if (!prevChoices.some((item) => item.id === choiceItem.id)) {
+            const newChoices = [...prevChoices, choiceItem];
+            localStorage.setItem("choices", JSON.stringify(newChoices));
+            return newChoices;
+          }
+          return prevChoices;
+        });
+
+        // Force a full refresh to ensure consistency
+        setTimeout(() => refreshAllData(), 500);
       },
     );
     const updateChoiceSubscription = updateChoiceListener(
       async (choiceItem: ChoiceEntity) => {
-        const newChoices = choices.map((choice) =>
-          choice.id === choiceItem.id ? choiceItem : choice,
-        );
-        setChoices(newChoices);
+        console.log("Choice item updated:", choiceItem);
+        setChoices((prevChoices) => {
+          const newChoices = prevChoices.map((choice) =>
+            choice.id === choiceItem.id ? choiceItem : choice,
+          );
+          localStorage.setItem("choices", JSON.stringify(newChoices));
+          return newChoices;
+        });
+
+        // Force a full refresh to ensure consistency
+        setTimeout(() => refreshAllData(), 500);
       },
     );
     const deleteRotationSubscription = deleteRotationListener(
       async (rotationItem: RotationEntity) => {
-        const newRotation = rotation.filter((r) => r.id !== rotationItem.id);
-        setRotation(newRotation);
+        console.log("Rotation item deleted:", rotationItem);
+        setRotation((prevRotation) => {
+          const newRotation = prevRotation.filter(
+            (r) => r.id !== rotationItem.id,
+          );
+          localStorage.setItem("rotation", JSON.stringify(newRotation));
+          return newRotation;
+        });
+
+        // Force a full refresh to ensure consistency
+        setTimeout(() => refreshAllData(), 500);
       },
     );
     const createPreferencesSubscription = createPreferencesListener(
       async (preferences: PreferencesEntity) => {
-        setPreferences({ ...preferences, compactMode: true });
+        console.log("Preferences created:", preferences);
+        setPreferences((prevPreferences) => {
+          const newPreferences = { ...prevPreferences, ...preferences };
+          localStorage.setItem("preferences", JSON.stringify(newPreferences));
+          return newPreferences;
+        });
       },
     );
     const updatePreferencesSubscription = updatePreferencesListener(
       async (preferences: PreferencesEntity) => {
-        setPreferences({ ...preferences, compactMode: true });
+        console.log("Preferences updated:", preferences);
+        setPreferences((prevPreferences) => {
+          const newPreferences = { ...prevPreferences, ...preferences };
+          localStorage.setItem("preferences", JSON.stringify(newPreferences));
+          return newPreferences;
+        });
       },
     );
+
+    // Initial data load
+    refreshAllData();
+
     return () => {
+      console.log("Unsubscribing from all listeners");
       unsubscribeListener(createRotationSubscription);
       unsubscribeListener(createChoiceSubscription);
       unsubscribeListener(updateChoiceSubscription);
@@ -102,7 +209,7 @@ function App(props: { user: AuthUser }) {
       unsubscribeListener(createPreferencesSubscription);
       unsubscribeListener(updatePreferencesSubscription);
     };
-  }, [choices, rotation, lastOpenTime]);
+  }, [lastOpenTime, refreshAllData]); // Only depend on lastOpenTime to avoid unnecessary re-subscriptions
 
   useEffect(() => {
     const setup = async () => {
@@ -132,36 +239,14 @@ function App(props: { user: AuthUser }) {
         }
 
         console.log({ coordinates });
-        localStorage.setItem("coordinates", JSON.stringify(coordinates))
+        localStorage.setItem("coordinates", JSON.stringify(coordinates));
         setYouAreHere({
           latitude: coordinates!.coords.latitude,
           longitude: coordinates!.coords.longitude,
         });
       };
 
-      const fetchChoices = async () => {
-        const choices = await listChoice();
-        localStorage.setItem("choices", JSON.stringify(choices))
-        setChoices(choices);
-      };
-
-      const fetchPreferences = async () => {
-        const preferences = await getPreferences();
-        localStorage.setItem("preferences", JSON.stringify(preferences))
-        setPreferences({ ...preferences, compactMode: true });
-      };
-
-      const fetchRotation = async () => {
-        const rotation = await listRotation();
-        localStorage.setItem("rotation", JSON.stringify(rotation))
-        setRotation(rotation);
-      };
-      await Promise.all([
-        fetchChoices(),
-        fetchRotation(),
-        fetchGeolocation(),
-        fetchPreferences(),
-      ]);
+      await fetchGeolocation();
     };
     setup();
   }, []);
@@ -175,6 +260,7 @@ function App(props: { user: AuthUser }) {
         rotation={rotation}
         choices={choices}
         preferences={preferences}
+        refreshData={refreshAllData}
       />
       <Footer />
     </>

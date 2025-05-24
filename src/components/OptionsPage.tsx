@@ -1,9 +1,5 @@
 import { AuthUser } from "aws-amplify/auth";
-import {
-  ChoiceEntity,
-  PreferencesEntity,
-  RotationEntity,
-} from "../entities";
+import { ChoiceEntity, PreferencesEntity, RotationEntity } from "../entities";
 import { CurrentOptions } from "./OptionsPage/CurrentOptions";
 import { PastChoices } from "./OptionsPage/PastChoices";
 import { Divider } from "@aws-amplify/ui-react";

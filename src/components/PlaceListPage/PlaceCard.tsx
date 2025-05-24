@@ -17,6 +17,7 @@ import {
   createOrUpdateChoice,
   createRotation,
   deleteRotation,
+  listChoice,
   selectChoice,
   updateChoice,
 } from "../../entities";
@@ -66,27 +67,101 @@ export const PlaceCard = (props: {
   }, []);
 
   const handleAddToRotation = async (googlePlaceId: string) => {
-    setIsDisabled(true);
-    await createRotation(googlePlaceId);
-    setIsDisabled(false);
+    try {
+      setIsDisabled(true);
+      console.log("Adding to rotation:", googlePlaceId);
+      const result = await createRotation(googlePlaceId);
+      console.log("Added to rotation successfully:", result);
+      // Force a small delay to ensure the subscription has time to process
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } catch (error) {
+      console.error("Error adding to rotation:", error);
+    } finally {
+      setIsDisabled(false);
+    }
   };
 
   const handleRemoveFromRotation = async (rotation: RotationEntity) => {
-    setIsDisabled(true);
-    await deleteRotation(rotation);
-    setIsDisabled(false);
+    try {
+      setIsDisabled(true);
+      console.log("Removing from rotation:", rotation);
+      const result = await deleteRotation(rotation);
+      console.log("Removed from rotation successfully:", result);
+      // Force a small delay to ensure the subscription has time to process
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } catch (error) {
+      console.error("Error removing from rotation:", error);
+    } finally {
+      setIsDisabled(false);
+    }
   };
 
   const handleAddToOptions = async (googlePlaceId: string) => {
-    setIsDisabled(true);
-    await createOrUpdateChoice(googlePlaceId);
-    setIsDisabled(false);
+    try {
+      setIsDisabled(true);
+      console.log("Adding to options:", googlePlaceId);
+      const result = await createOrUpdateChoice(googlePlaceId);
+      console.log("Added to options successfully:", result);
+
+      // Force a direct refresh of the current choices
+      try {
+        const freshChoices: ChoiceEntity[] = await listChoice();
+        console.log("Fresh choices after adding option:", freshChoices);
+
+        // Find the current choice with NONE as selectedPlaceId
+        const currentChoice = freshChoices.find(
+          (c) => c.selectedPlaceId === "NONE",
+        );
+        console.log("Current choice after refresh:", currentChoice);
+
+        if (currentChoice) {
+          // Verify the place ID was actually added
+          if (currentChoice.optionPlaceIds.includes(googlePlaceId)) {
+            console.log("Verified place was added to options:", googlePlaceId);
+          } else {
+            console.warn(
+              "Place was not found in options after adding:",
+              googlePlaceId,
+            );
+            // Try to add it again with a direct update
+            if (currentChoice.id) {
+              console.log("Attempting direct update to add place to options");
+              await updateChoice({
+                ...currentChoice,
+                optionPlaceIds: [
+                  googlePlaceId,
+                  ...currentChoice.optionPlaceIds,
+                ],
+              });
+            }
+          }
+        }
+      } catch (refreshError) {
+        console.error("Error refreshing choices after add:", refreshError);
+      }
+
+      // Force a small delay to ensure the subscription has time to process
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error("Error adding to options:", error);
+    } finally {
+      setIsDisabled(false);
+    }
   };
 
   const handleSelectOption = async (googlePlaceId: string) => {
-    setIsDisabled(true);
-    await selectChoice(currentChoice!, googlePlaceId);
-    setIsDisabled(false);
+    try {
+      setIsDisabled(true);
+      console.log("Selecting option:", googlePlaceId);
+      const result = await selectChoice(currentChoice!, googlePlaceId);
+      console.log("Selected option successfully:", result);
+      // Force a small delay to ensure the subscription has time to process
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } catch (error) {
+      console.error("Error selecting option:", error);
+    } finally {
+      setIsDisabled(false);
+    }
   };
 
   const handleNextPage = () => {
@@ -113,15 +188,32 @@ export const PlaceCard = (props: {
   );
   const isInRotation = rotationIds.includes(props.place.id);
   const handleRemoveOption = async (googlePlaceId: string) => {
-    await updateChoice({
-      ...currentChoice,
-      id: currentChoice!.id!,
-      optionPlaceIds: currentChoice!.optionPlaceIds.filter(
-        (id) => id !== googlePlaceId,
-      ),
-      createdAt: currentChoice!.createdAt,
-      updatedAt: currentChoice!.updatedAt,
-    });
+    try {
+      setIsDisabled(true);
+      console.log("Removing option:", googlePlaceId);
+      if (!currentChoice) {
+        console.error("No current choice found");
+        return;
+      }
+
+      const result = await updateChoice({
+        ...currentChoice,
+        id: currentChoice.id!,
+        optionPlaceIds: currentChoice.optionPlaceIds.filter(
+          (id) => id !== googlePlaceId,
+        ),
+        createdAt: currentChoice.createdAt,
+        updatedAt: currentChoice.updatedAt,
+      });
+
+      console.log("Removed option successfully:", result);
+      // Force a small delay to ensure the subscription has time to process
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } catch (error) {
+      console.error("Error removing option:", error);
+    } finally {
+      setIsDisabled(false);
+    }
   };
 
   if (props.preferences.compactMode) {

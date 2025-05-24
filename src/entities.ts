@@ -115,8 +115,15 @@ export const listRotation = async (): Promise<RotationEntity[]> => {
 };
 
 export const listChoice = async (): Promise<ChoiceEntity[]> => {
-  const choice = await client.models.Choice.list();
-  return choice.data;
+  try {
+    console.log("Fetching all choices...");
+    const response = await client.models.Choice.list();
+    console.log("Choices fetched:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching choices:", error);
+    return [];
+  }
 };
 
 export const getPreferences = async (): Promise<PreferencesEntity> => {
@@ -154,71 +161,199 @@ export const updatePreferences = async (
   }
 };
 
+// Add a refresh mechanism to force data refresh
+let refreshCallbacks: (() => void)[] = [];
+
+export const registerRefreshCallback = (callback: () => void) => {
+  refreshCallbacks.push(callback);
+  return () => {
+    refreshCallbacks = refreshCallbacks.filter((cb) => cb !== callback);
+  };
+};
+
+export const triggerRefresh = () => {
+  refreshCallbacks.forEach((callback) => callback());
+};
+
+// Modify the existing functions to trigger refresh
 export const createRotation = async (
   googlePlaceId: string,
 ): Promise<RotationEntity> => {
-  const rotation = await client.models.Rotation.create({
-    googlePlaceId,
-  });
+  try {
+    // Check if the place already exists in rotation to prevent duplicates
+    const existingRotation = await client.models.Rotation.list();
+    const alreadyExists = existingRotation.data.some(
+      (item) => item.googlePlaceId === googlePlaceId,
+    );
 
-  return rotation.data!;
+    if (alreadyExists) {
+      // Return the existing rotation item instead of creating a duplicate
+      const existingItem = existingRotation.data.find(
+        (item) => item.googlePlaceId === googlePlaceId,
+      )!;
+      console.log("Place already exists in rotation:", existingItem);
+      return existingItem;
+    }
+
+    // Create new rotation item only if it doesn't already exist
+    console.log("Creating new rotation item for:", googlePlaceId);
+    const rotation = await client.models.Rotation.create({
+      googlePlaceId,
+    });
+
+    console.log("Rotation created successfully:", rotation.data);
+
+    // Trigger refresh to update UI
+    setTimeout(() => triggerRefresh(), 500);
+
+    return rotation.data!;
+  } catch (error) {
+    console.error("Error creating rotation:", error);
+    throw error;
+  }
 };
 
 export const deleteRotation = async (
   rotation: RotationEntity,
 ): Promise<RotationEntity> => {
-  await client.models.Rotation.delete({
-    id: rotation.id,
-  });
+  try {
+    console.log("Deleting rotation item:", rotation);
+    await client.models.Rotation.delete({
+      id: rotation.id,
+    });
 
-  return rotation;
+    console.log("Rotation deleted successfully");
+
+    // Trigger refresh to update UI
+    setTimeout(() => triggerRefresh(), 500);
+
+    return rotation;
+  } catch (error) {
+    console.error("Error deleting rotation:", error);
+    throw error;
+  }
 };
 
 export const updateChoice = async (
   choice: ChoiceEntity,
 ): Promise<ChoiceEntity> => {
-  const updatedChoice = await client.models.Choice.update({
-    id: choice.id,
-    optionPlaceIds: choice.optionPlaceIds,
-  });
-  return updatedChoice.data!;
+  try {
+    console.log("Updating choice:", choice);
+    const updatedChoice = await client.models.Choice.update({
+      id: choice.id,
+      optionPlaceIds: choice.optionPlaceIds,
+    });
+
+    console.log("Choice updated successfully:", updatedChoice.data);
+
+    // Trigger refresh to update UI
+    setTimeout(() => triggerRefresh(), 500);
+
+    return updatedChoice.data!;
+  } catch (error) {
+    console.error("Error updating choice:", error);
+    throw error;
+  }
 };
 
 export const createOrUpdateChoice = async (
   googlePlaceId: string,
 ): Promise<ChoiceEntity> => {
-  const incompleteChoices =
-    await client.models.Choice.listChoiceBySelectedPlaceId({
+  try {
+    console.log("Starting createOrUpdateChoice for place:", googlePlaceId);
+
+    // First, get the latest choices to ensure we're working with current data
+    const allChoices = await client.models.Choice.list();
+    console.log("All current choices:", allChoices.data);
+
+    const incompleteChoices = allChoices.data.filter(
+      (c) => c.selectedPlaceId === "NONE",
+    );
+    console.log("Incomplete choices:", incompleteChoices);
+
+    const incompleteChoice = incompleteChoices[0]; // Take the first incomplete choice if multiple exist
+
+    if (incompleteChoice) {
+      // Check if the place ID already exists in the options to prevent duplicates
+      if (!incompleteChoice.optionPlaceIds.includes(googlePlaceId)) {
+        console.log("Updating existing choice with new place:", googlePlaceId);
+
+        // Create a new array with the new place ID at the beginning
+        const updatedOptionPlaceIds = [
+          googlePlaceId,
+          ...incompleteChoice.optionPlaceIds,
+        ];
+        console.log("Updated option place IDs:", updatedOptionPlaceIds);
+
+        const updatedChoice = await client.models.Choice.update({
+          id: incompleteChoice.id,
+          selectedPlaceId: "NONE",
+          optionPlaceIds: updatedOptionPlaceIds,
+        });
+
+        console.log("Choice updated successfully:", updatedChoice.data);
+
+        // Verify the update worked
+        const verifyChoice = await client.models.Choice.get({
+          id: incompleteChoice.id,
+        });
+        console.log("Verified updated choice:", verifyChoice.data);
+
+        // Trigger refresh to update UI
+        setTimeout(() => triggerRefresh(), 500);
+
+        return updatedChoice.data!;
+      }
+
+      console.log("Place already exists in options:", googlePlaceId);
+      return incompleteChoice; // Return existing choice if place ID already exists
+    }
+
+    console.log("Creating new choice with place:", googlePlaceId);
+    const createdChoice = await client.models.Choice.create({
       selectedPlaceId: "NONE",
+      optionPlaceIds: [googlePlaceId],
     });
-  console.log({ incompleteChoices });
-  const incompleteChoice = incompleteChoices.data.find((i) => i);
-  if (incompleteChoice) {
-    const updatedChoice = await client.models.Choice.update({
-      id: incompleteChoice.id,
-      selectedPlaceId: "NONE",
-      optionPlaceIds: [googlePlaceId, ...incompleteChoice.optionPlaceIds],
+
+    console.log("Choice created successfully:", createdChoice.data);
+
+    // Verify the creation worked
+    const verifyChoice = await client.models.Choice.get({
+      id: createdChoice.data!.id,
     });
-    return updatedChoice.data!;
+    console.log("Verified created choice:", verifyChoice.data);
+
+    // Trigger refresh to update UI
+    setTimeout(() => triggerRefresh(), 500);
+
+    return createdChoice.data!;
+  } catch (error) {
+    console.error("Error creating/updating choice:", error);
+    throw error;
   }
-
-  const createdChoice = await client.models.Choice.create({
-    selectedPlaceId: "NONE",
-    optionPlaceIds: [googlePlaceId],
-  });
-
-  return createdChoice.data!;
 };
 
 export const selectChoice = async (
   choice: ChoiceEntity,
   selectionPlaceId: string,
 ): Promise<ChoiceEntity> => {
-  const updatedChoice = await client.models.Choice.update({
-    id: choice.id,
-    selectedPlaceId: selectionPlaceId,
-  });
-  return updatedChoice.data!;
+  try {
+    console.log("Selecting choice:", { choice, selectionPlaceId });
+    const updatedChoice = await client.models.Choice.update({
+      id: choice.id,
+      selectedPlaceId: selectionPlaceId,
+    });
+
+    console.log("Choice selected successfully:", updatedChoice.data);
+
+    // Trigger refresh to update UI
+    setTimeout(() => triggerRefresh(), 500);
+
+    return updatedChoice.data!;
+  } catch (error) {
+    console.error("Error selecting choice:", error);
+    throw error;
+  }
 };
 
 export const createRotationListener = (

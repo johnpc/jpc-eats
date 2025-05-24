@@ -4,6 +4,7 @@ import {
   Place,
   PreferencesEntity,
   RotationEntity,
+  registerRefreshCallback,
 } from "../entities";
 import { Collection, Heading, Message, useTheme } from "@aws-amplify/ui-react";
 import { PlaceCard } from "./PlaceListPage/PlaceCard";
@@ -22,22 +23,61 @@ export const RotationPage = (props: {
   const { tokens } = useTheme();
   const [rotationPlaces, setRotationPlaces] = useState<Place[]>([]);
   const rotationIds = props.rotation.map((r) => r.googlePlaceId);
+  // const uniqueRotationIds = Array.from(new Set(rotationIds));
+
+  // Force refresh when rotation changes
   useEffect(() => {
-    const setup = async () => {
-      const promises = rotationIds.map(async (id) => {
+    console.log("Rotation changed, refreshing places...");
+    fetchRotationPlaces();
+  }, [props.rotation]);
+
+  // Register for global refresh events
+  useEffect(() => {
+    const unregister = registerRefreshCallback(() => {
+      console.log("Global refresh triggered for RotationPage");
+      fetchRotationPlaces();
+    });
+
+    return () => unregister();
+  }, []);
+
+  const fetchRotationPlaces = async () => {
+    try {
+      console.log("Fetching rotation places...");
+      // Get unique place IDs to prevent duplicates
+      const uniqueIds = Array.from(new Set(rotationIds));
+
+      if (uniqueIds.length === 0) {
+        setRotationPlaces([]);
+        return;
+      }
+
+      const promises = uniqueIds.map(async (id) => {
         const response = await client.queries.getGooglePlace({
           placeId: id,
         });
         return response.data!;
       });
+
       const places = await Promise.all(promises);
-      console.log({ places });
-      setRotationPlaces(places as unknown as Place[]);
-    };
-    if ((rotationIds ?? []).length !== (rotationPlaces ?? []).length) {
-      setup();
+      console.log("Fetched rotation places:", places);
+
+      // Filter out any undefined results and ensure uniqueness by ID
+      const uniquePlaces = places
+        .filter((place) => place !== undefined)
+        .reduce((acc: any[], place: any) => {
+          if (!acc.some((p) => p.id === place.id)) {
+            acc.push(place as unknown as Place);
+          }
+          return acc;
+        }, [] as Place[]);
+
+      setRotationPlaces(uniquePlaces);
+    } catch (error) {
+      console.error("Error fetching rotation places:", error);
     }
-  }, [rotationIds]);
+  };
+
   const uniqueNames: string[] = [];
   const uniquePlaces: Place[] = rotationPlaces.filter((place: Place) => {
     if (uniqueNames.includes(place.name)) {
@@ -56,7 +96,7 @@ export const RotationPage = (props: {
     return 0;
   });
 
-  console.log({ uniquePlaces });
+  console.log("Rendering rotation places:", uniquePlaces);
 
   return (
     <>
