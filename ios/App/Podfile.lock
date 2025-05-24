@@ -24,11 +24,11 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/geolocation"
 
 SPEC CHECKSUMS:
-  Capacitor: 747aadb4fa786f460d8cd9d0557cb81440a13747
-  CapacitorApp: 102e553c3b1fdc255969c39aa19b529675690ef4
+  Capacitor: 9686e5711b48a1aa84671ede795d0175848abcba
+  CapacitorApp: 8026f7ce1ac72780258d05a90c07deb5c724c0fa
   CapacitorCordova: 31ab98dca2ddcee051027a1afe7e8c85c82f7297
-  CapacitorGeolocation: 0572212732f7ee65828d069a9663a274be89b9fc
+  CapacitorGeolocation: 6beed87d5d2b80745f03a84db4ab2269bc872c9c
 
 PODFILE CHECKSUM: e1b62c2714985a0f61dcbadd9c2bea4d9360fbfe
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
