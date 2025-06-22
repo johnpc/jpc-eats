@@ -7,18 +7,21 @@ import {
 } from "@aws-amplify/ui-react";
 import SignOutButton from "./SettingsPage/SignOutButton";
 import { AuthUser } from "aws-amplify/auth";
-import { PreferencesEntity } from "../entities";
+import { ChoiceEntity, PreferencesEntity } from "../entities";
 import Preferences from "./SettingsPage/Preferences";
+import StatsPage from "./StatsPage";
 
 export default function SettingsPage(props: {
   user: AuthUser;
   preferences: PreferencesEntity;
+  choices: ChoiceEntity[];
 }) {
   const handleSuccess = () => {
     alert("success!");
   };
 
   return (
+    <>
     <Card>
       <Heading>{props.user.signInDetails?.loginId}</Heading>
       <Preferences preferences={props.preferences} />
@@ -32,5 +35,7 @@ export default function SettingsPage(props: {
         <Link href="mailto:john@johncorser.com">john@johncorser.com</Link>
       </Card>
     </Card>
+    <StatsPage choices={props.choices} />
+    </>
   );
 }
