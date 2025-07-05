@@ -14,7 +14,7 @@ import { Schema } from "../../amplify/data/resource";
 const client = generateClient<Schema>();
 
 export const RotationPage = (props: {
-  user: AuthUser;
+  user: AuthUser | null;
   youAreHere?: { latitude: number; longitude: number };
   rotation: RotationEntity[];
   choices: ChoiceEntity[];

@@ -36,6 +36,7 @@ export const PlaceCard = (props: {
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;
+  requireAuth?: () => boolean;
 }) => {
   const { tokens } = useTheme();
   const [selectedUrlIndex, setSelectedUrlIndex] = useState<number>(1);
@@ -67,6 +68,10 @@ export const PlaceCard = (props: {
   }, []);
 
   const handleAddToRotation = async (googlePlaceId: string) => {
+    if (props.requireAuth && !props.requireAuth()) {
+      return;
+    }
+    
     try {
       setIsDisabled(true);
       console.log("Adding to rotation:", googlePlaceId);
@@ -82,6 +87,10 @@ export const PlaceCard = (props: {
   };
 
   const handleRemoveFromRotation = async (rotation: RotationEntity) => {
+    if (props.requireAuth && !props.requireAuth()) {
+      return;
+    }
+    
     try {
       setIsDisabled(true);
       console.log("Removing from rotation:", rotation);
@@ -97,6 +106,10 @@ export const PlaceCard = (props: {
   };
 
   const handleAddToOptions = async (googlePlaceId: string) => {
+    if (props.requireAuth && !props.requireAuth()) {
+      return;
+    }
+    
     try {
       setIsDisabled(true);
       console.log("Adding to options:", googlePlaceId);
@@ -150,6 +163,10 @@ export const PlaceCard = (props: {
   };
 
   const handleSelectOption = async (googlePlaceId: string) => {
+    if (props.requireAuth && !props.requireAuth()) {
+      return;
+    }
+    
     try {
       setIsDisabled(true);
       console.log("Selecting option:", googlePlaceId);
@@ -188,6 +205,10 @@ export const PlaceCard = (props: {
   );
   const isInRotation = rotationIds.includes(props.place.id);
   const handleRemoveOption = async (googlePlaceId: string) => {
+    if (props.requireAuth && !props.requireAuth()) {
+      return;
+    }
+    
     try {
       setIsDisabled(true);
       console.log("Removing option:", googlePlaceId);

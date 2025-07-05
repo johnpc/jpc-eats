@@ -9,6 +9,7 @@ import {
 
 export const Header = () => {
   const { tokens } = useTheme();
+
   return (
     <View
       backgroundColor={tokens.colors.background.secondary}
@@ -17,7 +18,7 @@ export const Header = () => {
       textAlign={"center"}
     >
       <Card>
-        <Flex direction="row" alignItems="flex-start">
+        <Flex direction="row" alignItems="flex-start" justifyContent="space-between">
           <Flex
             direction="column"
             alignItems="flex-start"

@@ -22,7 +22,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 const client = generateClient<Schema>();
 
 export const CurrentOptions = (props: {
-  user: AuthUser;
+  user: AuthUser | null;
   youAreHere?: { latitude: number; longitude: number };
   rotation: RotationEntity[];
   choices: ChoiceEntity[];

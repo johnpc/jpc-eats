@@ -12,7 +12,7 @@ import { generateClient } from "aws-amplify/api";
 const client = generateClient<Schema>();
 
 export const PastChoices = (props: {
-  user: AuthUser;
+  user: AuthUser | null;
   youAreHere?: { latitude: number; longitude: number };
   rotation: RotationEntity[];
   choices: ChoiceEntity[];

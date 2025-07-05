@@ -1,10 +1,3 @@
-import {
-  Heading,
-  Image,
-  View,
-  useTheme,
-  withAuthenticator,
-} from "@aws-amplify/ui-react";
 import { Geolocation, Position } from "@capacitor/geolocation";
 import { App as CapacitorApp } from "@capacitor/app";
 
@@ -25,13 +18,16 @@ import {
   updateChoiceListener,
   updatePreferencesListener,
 } from "./entities";
-import { AuthUser } from "aws-amplify/auth";
 import TabsView from "./components/TabsView";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { AuthenticatorModal } from "./components/AuthenticatorModal";
 
-function App(props: { user: AuthUser }) {
+function AppContent() {
+  const { user } = useAuth();
   const [lastOpenTime, setLastOpenTime] = useState<Date>();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [preferences, setPreferences] = useState<PreferencesEntity>(
     localStorage.getItem("preferences")
       ? JSON.parse(localStorage.getItem("preferences")!)
@@ -64,6 +60,12 @@ function App(props: { user: AuthUser }) {
 
   // Add a direct refresh function to force data reload
   const refreshAllData = useCallback(async () => {
+    // Only refresh data if user is authenticated
+    if (!user) {
+      console.log("User not authenticated, skipping data refresh");
+      return;
+    }
+
     try {
       console.log("Manually refreshing all data...");
       const [rotationData, choicesData, preferencesData] = await Promise.all([
@@ -99,7 +101,15 @@ function App(props: { user: AuthUser }) {
       console.error("Error during manual data refresh:", error);
       throw error;
     }
-  }, []);
+  }, [user]);
+
+  const requireAuth = useCallback(() => {
+    if (!user) {
+      setShowAuthModal(true);
+      return false;
+    }
+    return true;
+  }, [user]);
 
   useEffect(() => {
     CapacitorApp.addListener("resume", () => {
@@ -112,6 +122,12 @@ function App(props: { user: AuthUser }) {
   }, [refreshAllData]);
 
   useEffect(() => {
+    // Only set up subscriptions if user is authenticated
+    if (!user) {
+      console.log("User not authenticated, skipping subscription setup");
+      return;
+    }
+
     const createRotationSubscription = createRotationListener(
       async (rotationItem: RotationEntity) => {
         console.log("Rotation item created:", rotationItem);
@@ -209,7 +225,7 @@ function App(props: { user: AuthUser }) {
       unsubscribeListener(createPreferencesSubscription);
       unsubscribeListener(updatePreferencesSubscription);
     };
-  }, [lastOpenTime, refreshAllData]); // Only depend on lastOpenTime to avoid unnecessary re-subscriptions
+  }, [lastOpenTime, refreshAllData, user]); // Include user in dependencies
 
   useEffect(() => {
     const setup = async () => {
@@ -255,39 +271,30 @@ function App(props: { user: AuthUser }) {
     <>
       <Header />
       <TabsView
-        user={props.user}
+        user={user}
         youAreHere={youAreHere}
         rotation={rotation}
         choices={choices}
         preferences={preferences}
         refreshData={refreshAllData}
+        requireAuth={requireAuth}
       />
       <Footer />
+      <AuthenticatorModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </>
   );
 }
 
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
-export default withAuthenticator(App, {
-  components: {
-    Header() {
-      const { tokens } = useTheme();
-      return (
-        <View textAlign="center" backgroundColor={"#F5DEB3"} padding={"15px"}>
-          <Image
-            alt="logo"
-            borderRadius={tokens.radii.xl}
-            width={"100px"}
-            src="/maskable.png"
-          />
-          <Heading
-            fontSize={tokens.fontSizes.xl}
-            color={tokens.colors.primary[90]}
-          >
-            jpc.eats
-          </Heading>
-        </View>
-      );
-    },
-  },
-});
+export default App;

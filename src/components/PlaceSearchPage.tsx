@@ -23,11 +23,12 @@ import { Schema } from "../../amplify/data/resource";
 const client = generateClient<Schema>();
 
 export const PlaceSearchPage = (props: {
-  user: AuthUser;
+  user: AuthUser | null;
   youAreHere: { latitude: number; longitude: number };
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
   preferences: PreferencesEntity;
+  requireAuth: () => boolean;
 }) => {
   const { tokens } = useTheme();
   const [search, setSearch] = useState<string>("food");
@@ -41,6 +42,7 @@ export const PlaceSearchPage = (props: {
   );
   useEffect(() => {
     const setup = async () => {
+      console.log({searching: true});
       const responseSearch = await client.queries.searchGooglePlaces({
         latitude: props.youAreHere.latitude,
         longitude: props.youAreHere.longitude,
@@ -222,6 +224,7 @@ export const PlaceSearchPage = (props: {
             rotation={props.rotation}
             choices={props.choices}
             preferences={props.preferences}
+            requireAuth={props.requireAuth}
           />
         )}
       </Collection>

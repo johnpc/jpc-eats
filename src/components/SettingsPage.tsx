@@ -12,7 +12,7 @@ import Preferences from "./SettingsPage/Preferences";
 import StatsPage from "./StatsPage";
 
 export default function SettingsPage(props: {
-  user: AuthUser;
+  user: AuthUser | null;
   preferences: PreferencesEntity;
   choices: ChoiceEntity[];
 }) {
@@ -23,13 +23,18 @@ export default function SettingsPage(props: {
   return (
     <>
     <Card>
-      <Heading>{props.user.signInDetails?.loginId}</Heading>
+      {props.user && (
+        <>
+          <Heading>{props.user.signInDetails?.loginId}</Heading>
+          <AccountSettings.ChangePassword onSuccess={handleSuccess} />
+          <Divider style={{ margin: "20px" }} />
+          <AccountSettings.DeleteUser onSuccess={handleSuccess} />
+          <Divider style={{ margin: "20px" }} />
+        </>
+      )}
       <Preferences preferences={props.preferences} />
-      <AccountSettings.ChangePassword onSuccess={handleSuccess} />
       <Divider style={{ margin: "20px" }} />
       <SignOutButton />
-      <Divider style={{ margin: "20px" }} />
-      <AccountSettings.DeleteUser onSuccess={handleSuccess} />
       <Card>
         For support, send an email to{" "}
         <Link href="mailto:john@johncorser.com">john@johncorser.com</Link>

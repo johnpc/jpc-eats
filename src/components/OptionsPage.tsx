@@ -5,7 +5,7 @@ import { PastChoices } from "./OptionsPage/PastChoices";
 import { Divider } from "@aws-amplify/ui-react";
 
 export const OptionsPage = (props: {
-  user: AuthUser;
+  user: AuthUser | null;
   youAreHere?: { latitude: number; longitude: number };
   rotation: RotationEntity[];
   choices: ChoiceEntity[];
