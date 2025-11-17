@@ -62,7 +62,7 @@ const schema = a
         search: a.string(),
       })
       .returns(a.ref("GooglePlace").array().required())
-      .authorization((allow) => [allow.authenticated()])
+      .authorization((allow) => [allow.authenticated(), allow.guest()])
       .handler(a.handler.function(searchPlacesFunction)),
     getGooglePlace: a
       .query()
@@ -70,7 +70,7 @@ const schema = a
         placeId: a.string().required(),
       })
       .returns(a.ref("GooglePlace"))
-      .authorization((allow) => [allow.authenticated()])
+      .authorization((allow) => [allow.authenticated(), allow.guest()])
       .handler(a.handler.function(getPlaceFunction)),
     getGooglePlaceImage: a
       .query()
@@ -80,7 +80,7 @@ const schema = a
         heightPx: a.integer(),
       })
       .returns(a.ref("GooglePlaceImage"))
-      .authorization((allow) => [allow.authenticated()])
+      .authorization((allow) => [allow.authenticated(), allow.guest()])
       .handler(a.handler.function(getPlaceImageFunction)),
   })
   .authorization((allow) => [

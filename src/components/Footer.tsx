@@ -1,3 +1,4 @@
+"use client";
 import {
   Card,
   Image,
@@ -6,7 +7,9 @@ import {
   Text,
   Button,
   useTheme,
+  Link,
 } from "@aws-amplify/ui-react";
+import { Capacitor } from "@capacitor/core";
 
 export const Footer = () => {
   const { tokens } = useTheme();
@@ -40,7 +43,12 @@ export const Footer = () => {
               <Button as="a" href="https://github.com/johnpc/jpc-eats">
                 <Image alt="github" src="/github.png" />
               </Button>
-              <Text as="span">jpc.eats is open source.</Text>
+              <Text as="span">eats.jpc.io is open source.</Text>
+              {Capacitor.getPlatform() === "ios" ? null : (
+                <Link href="https://apps.apple.com/us/app/jpc-eats/id6502933152">
+                  Download iOS app
+                </Link>
+              )}
             </Flex>
           </Flex>
         </Flex>

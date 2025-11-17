@@ -1,11 +1,11 @@
-import { Authenticator, View, Image, Heading, useTheme } from '@aws-amplify/ui-react';
+import { Authenticator, View, Image, Heading, useTheme } from "@aws-amplify/ui-react";
 
-interface AuthenticatorModalProps {
+interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps) {
+export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { tokens } = useTheme();
 
   if (!isOpen) return null;
@@ -13,16 +13,16 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
   return (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
         zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <View
@@ -38,12 +38,12 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
           <button
             onClick={onClose}
             style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              padding: '0',
-              color: '#666'
+              background: "none",
+              border: "none",
+              fontSize: "24px",
+              cursor: "pointer",
+              padding: "0",
+              color: "#666",
             }}
           >
             ×
@@ -60,10 +60,7 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
                     width="100px"
                     src="/maskable.png"
                   />
-                  <Heading
-                    fontSize={tokens.fontSizes.xl}
-                    color={tokens.colors.primary[90]}
-                  >
+                  <Heading fontSize={tokens.fontSizes.xl} color={tokens.colors.primary[90]}>
                     jpc.eats
                   </Heading>
                 </View>
@@ -72,7 +69,6 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
           }}
         >
           {() => {
-            // Close modal when authentication is successful
             onClose();
             return <div />;
           }}

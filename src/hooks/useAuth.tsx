@@ -1,12 +1,11 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { AuthUser, getCurrentUser, signOut } from 'aws-amplify/auth';
-import { Hub } from 'aws-amplify/utils';
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { AuthUser, getCurrentUser, signOut } from "aws-amplify/auth";
+import { Hub } from "aws-amplify/utils";
 
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
-  requireAuth: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,29 +15,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check current auth state
     getCurrentUser()
-      .then((currentUser) => {
-        setUser(currentUser);
-      })
-      .catch(() => {
-        setUser(null);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setIsLoading(false));
 
-    // Listen for auth events
-    const unsubscribe = Hub.listen('auth', ({ payload }) => {
-      switch (payload.event) {
-        case 'signedIn':
-          getCurrentUser().then((currentUser) => {
-            setUser(currentUser);
-          });
-          break;
-        case 'signedOut':
-          setUser(null);
-          break;
+    const unsubscribe = Hub.listen("auth", ({ payload }) => {
+      if (payload.event === "signedIn") {
+        getCurrentUser().then(setUser);
+      } else if (payload.event === "signedOut") {
+        setUser(null);
       }
     });
 
@@ -46,27 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const handleSignOut = async () => {
-    try {
-      await signOut();
-      setUser(null);
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
-  const requireAuth = () => {
-    return user !== null;
+    await signOut();
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        signOut: handleSignOut,
-        requireAuth,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, signOut: handleSignOut }}>
       {children}
     </AuthContext.Provider>
   );
@@ -74,8 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }

@@ -1,24 +1,42 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import "@aws-amplify/ui-react/styles.css";
-import "@aws-amplify/ui-react-geo/styles.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
-// import "./index.css";
-import config from "../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { ThemeProvider, Theme } from "@aws-amplify/ui-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import config from "../amplify_outputs.json";
+import App from "./App";
+import { AuthProvider } from "./hooks/useAuth";
+import { SubscriptionProvider } from "./providers/SubscriptionProvider";
+
 Amplify.configure(config);
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 const theme: Theme = {
-  name: "my-theme",
+  name: "jpc-eats-theme",
   primaryColor: "orange",
 };
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <App />
-    </ThemeProvider>
-  </React.StrictMode>,
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <AuthProvider>
+          <SubscriptionProvider>
+            <App />
+          </SubscriptionProvider>
+        </AuthProvider>
+      </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  </React.StrictMode>
 );
