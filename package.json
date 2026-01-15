@@ -40,14 +40,14 @@
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.0.0",
     "@tanstack/react-query-devtools": "^5.91.2",
-    "@types/react": "^19.2.7",
+    "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "@types/recharts": "^2.0.1",
-    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/eslint-plugin": "^8.53.0",
     "@typescript-eslint/parser": "^8.51.0",
     "@vitejs/plugin-react": "^5.1.2",
-    "aws-cdk": "^2.1100.2",
-    "aws-cdk-lib": "^2.233.0",
+    "aws-cdk": "^2.1100.3",
+    "aws-cdk-lib": "^2.234.1",
     "constructs": "^10.4.4",
     "dotenv": "^17.2.3",
     "esbuild": "^0.27.2",
@@ -59,7 +59,7 @@
     "prettier": "^3.7.4",
     "tsx": "^4.21.0",
     "typescript": "^5.4.5",
-    "vite": "^7.3.0"
+    "vite": "^7.3.1"
   },
   "lint-staged": {
     "*.ts": [
