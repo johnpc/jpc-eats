@@ -17,14 +17,14 @@
   "dependencies": {
     "@aws-amplify/ui-react": "^6.13.2",
     "@aws-amplify/ui-react-geo": "^2.2.13",
-    "@aws-sdk/s3-request-presigner": "^3.962.0",
+    "@aws-sdk/s3-request-presigner": "^3.967.0",
     "@capacitor/app": "^8.0.0",
     "@capacitor/core": "^8.0.0",
     "@capacitor/geolocation": "^8.0.0",
     "@capacitor/ios": "^8.0.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@mui/icons-material": "^7.3.6",
+    "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.6",
     "@tanstack/react-query": "^5.90.16",
     "aws-amplify": "^6.15.9",
@@ -32,7 +32,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "recharts": "^3.6.0",
-    "use-debounce": "^10.0.1"
+    "use-debounce": "^10.1.0"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.19.0",
