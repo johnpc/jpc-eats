@@ -8,6 +8,7 @@ interface PlaceStats {
   name: string;
   count: number;
   placeId: string;
+  [key: string]: string | number;
 }
 
 const COLORS = [
@@ -72,7 +73,7 @@ export function StatsChart({ choices }: StatsChartProps) {
               outerRadius={120}
               fill="#8884d8"
               dataKey="count"
-              label={({ percent }) => percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : null}
+              label={({ percent }) => (percent && percent > 0.05) ? `${(percent * 100).toFixed(0)}%` : null}
             >
               {stats.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
