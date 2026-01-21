@@ -10,3 +10,8 @@ updates:
         dependency-type: "development"
       production-dependencies:
         dependency-type: "production"
+    # Require CI to pass before auto-merge
+    reviewers:
+      - johnpc
+    labels:
+      - dependencies
