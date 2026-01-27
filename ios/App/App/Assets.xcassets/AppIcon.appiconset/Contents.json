@@ -2,9 +2,21 @@
   "images": [
     {
       "idiom": "universal",
+      "platform": "ios",
       "size": "1024x1024",
-      "filename": "AppIcon-512@2x.png",
-      "platform": "ios"
+      "filename": "AppIcon-512@2x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "size": "1024x1024",
+      "filename": "AppIcon-Dark-512@2x.png"
     }
   ],
   "info": {
