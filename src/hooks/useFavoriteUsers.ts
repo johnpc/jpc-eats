@@ -1,12 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { client } from "../lib/amplify-client";
 import { FavoriteUserEntity } from "../lib/types";
+import { useAuth } from "./useAuth";
 
 export function useFavoriteUsers() {
+  const { user } = useAuth();
+  const userId = user?.userId;
+
   return useQuery({
-    queryKey: ["favoriteUsers"],
+    queryKey: ["favoriteUsers", userId],
+    enabled: !!userId,
     queryFn: async () => {
-      const { data } = await client.models.FavoriteUser.list();
+      const { data } = await client.models.FavoriteUser.list({
+        filter: { owner: { eq: userId } },
+      });
       return data as FavoriteUserEntity[];
     },
   });
