@@ -33,6 +33,29 @@ underlyingAuthLambda.addEnvironment(
   process.env.ADMIN_API_KEY!,
 );
 
+// Set refresh token validity to maximum (10 years)
+const { cfnUserPool } = backend.auth.resources.cfnResources;
+cfnUserPool.userPoolAddOns = { advancedSecurityMode: "OFF" };
+cfnUserPool.policies = {
+  passwordPolicy: {
+    minimumLength: 8,
+    requireLowercase: false,
+    requireNumbers: false,
+    requireSymbols: false,
+    requireUppercase: false,
+  },
+};
+
+const { cfnUserPoolClient } = backend.auth.resources.cfnResources;
+cfnUserPoolClient.refreshTokenValidity = 3650; // 10 years (max)
+cfnUserPoolClient.accessTokenValidity = 1; // 1 day
+cfnUserPoolClient.idTokenValidity = 1; // 1 day
+cfnUserPoolClient.tokenValidityUnits = {
+  refreshToken: "days",
+  accessToken: "days",
+  idToken: "days",
+};
+
 // const outputs = {} as { [key: string]: string };
 [
   { name: "getPlaceImageFunction" },
