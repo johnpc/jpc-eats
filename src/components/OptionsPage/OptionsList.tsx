@@ -3,9 +3,11 @@ import { OptionPlaceCard } from "./OptionPlaceCard";
 
 interface OptionsListProps {
   placeIds: string[];
+  choiceId?: string;
+  onSelect?: (placeId: string) => void;
 }
 
-export function OptionsList({ placeIds }: OptionsListProps) {
+export function OptionsList({ placeIds, choiceId, onSelect }: OptionsListProps) {
   const { tokens } = useTheme();
 
   return (
@@ -16,7 +18,13 @@ export function OptionsList({ placeIds }: OptionsListProps) {
       gap="medium"
       marginBottom={tokens.space.medium}
     >
-      {(placeId) => <OptionPlaceCard key={placeId} placeId={placeId} />}
+      {(placeId) => (
+        <OptionPlaceCard
+          key={placeId}
+          placeId={placeId}
+          onSelect={choiceId && onSelect ? () => onSelect(placeId) : undefined}
+        />
+      )}
     </Collection>
   );
 }

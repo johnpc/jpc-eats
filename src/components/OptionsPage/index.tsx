@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useChoices } from "../../hooks/useChoices";
 import { AuthModal } from "../AuthModal";
 import { OptionsList } from "./OptionsList";
+import { SharedChoices } from "./SharedChoices";
 
 export function OptionsPage() {
   const { tokens } = useTheme();
@@ -37,22 +38,18 @@ export function OptionsPage() {
     );
   }
 
-  if (!currentChoice || currentChoice.optionPlaceIds.length === 0) {
-    return (
-      <>
-        <Heading marginBottom={tokens.space.xs}>Current Options</Heading>
+  return (
+    <>
+      <Heading marginBottom={tokens.space.xs}>Your Options</Heading>
+      {!currentChoice || currentChoice.optionPlaceIds.length === 0 ? (
         <Message variation="outlined" colorTheme="warning" heading="No Options Yet">
           You haven't nominated any options yet. Go to the Rotation tab to choose from your
           favorites, or search for something new and exciting to try!
         </Message>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Heading marginBottom={tokens.space.xs}>Current Options</Heading>
-      <OptionsList placeIds={currentChoice.optionPlaceIds.filter((id): id is string => !!id)} />
+      ) : (
+        <OptionsList placeIds={currentChoice.optionPlaceIds.filter((id): id is string => !!id)} />
+      )}
+      <SharedChoices />
     </>
   );
 }

@@ -4,12 +4,21 @@ import { useChoices, useCreateChoice, useUpdateChoice } from "../../hooks/useCho
 import { useRequireAuth } from "../../hooks/useRequireAuth";
 import { ActionButtons } from "./ActionButtons";
 import { AuthModal } from "../AuthModal";
+import { ReactNode } from "react";
 
 interface PlaceCardProps {
-  place: any;
+  place: {
+    id: string;
+    name?: string | null;
+    displayName?: { text?: string | null } | null;
+    websiteUri?: string | null;
+    shortFormattedAddress?: string | null;
+    primaryTypeDisplayName?: { text?: string | null } | null;
+  };
+  children?: ReactNode;
 }
 
-export function PlaceCard({ place }: PlaceCardProps) {
+export function PlaceCard({ place, children }: PlaceCardProps) {
   const { tokens } = useTheme();
   const name = place.displayName?.text || place.name;
 
@@ -37,14 +46,9 @@ export function PlaceCard({ place }: PlaceCardProps) {
   const handleNominate = () => {
     requireAuth(() => {
       if (currentChoice) {
-        // Add to existing choice's options
         const newOptions = [...currentChoice.optionPlaceIds.filter((id): id is string => !!id), place.id];
-        updateChoice.mutate({
-          id: currentChoice.id,
-          optionPlaceIds: newOptions,
-        });
+        updateChoice.mutate({ id: currentChoice.id, optionPlaceIds: newOptions });
       } else {
-        // Create new choice with this place
         createChoice.mutate([place.id]);
       }
     });
@@ -53,12 +57,8 @@ export function PlaceCard({ place }: PlaceCardProps) {
   const handleRemoveNomination = () => {
     requireAuth(() => {
       if (currentChoice) {
-        // Remove from choice's options
         const newOptions = currentChoice.optionPlaceIds.filter((id) => id !== place.id);
-        updateChoice.mutate({
-          id: currentChoice.id,
-          optionPlaceIds: newOptions,
-        });
+        updateChoice.mutate({ id: currentChoice.id, optionPlaceIds: newOptions });
       }
     });
   };
@@ -66,10 +66,7 @@ export function PlaceCard({ place }: PlaceCardProps) {
   const handleSelectNomination = () => {
     requireAuth(() => {
       if (currentChoice) {
-        updateChoice.mutate({
-          id: currentChoice.id,
-          selectedPlaceId: place.id,
-        });
+        updateChoice.mutate({ id: currentChoice.id, selectedPlaceId: place.id });
       }
     });
   };
@@ -96,16 +93,18 @@ export function PlaceCard({ place }: PlaceCardProps) {
           {place.primaryTypeDisplayName?.text && (
             <Text fontSize="small">{place.primaryTypeDisplayName.text}</Text>
           )}
-          <ActionButtons
-            isInRotation={isInRotation}
-            isNominated={isNominated}
-            onAddToRotation={handleAddToRotation}
-            onRemoveFromRotation={handleRemoveFromRotation}
-            onNominate={handleNominate}
-            onRemoveNomination={handleRemoveNomination}
-            onSelectNomination={handleSelectNomination}
-            disabled={isDisabled}
-          />
+          {children || (
+            <ActionButtons
+              isInRotation={isInRotation}
+              isNominated={isNominated}
+              onAddToRotation={handleAddToRotation}
+              onRemoveFromRotation={handleRemoveFromRotation}
+              onNominate={handleNominate}
+              onRemoveNomination={handleRemoveNomination}
+              onSelectNomination={handleSelectNomination}
+              disabled={isDisabled}
+            />
+          )}
         </Flex>
       </Card>
       <AuthModal isOpen={showAuthModal} onClose={closeAuthModal} />

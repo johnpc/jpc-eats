@@ -11,6 +11,7 @@ import {
 } from "@aws-amplify/ui-react";
 import { useAuth } from "../../hooks/useAuth";
 import { AuthModal } from "../AuthModal";
+import { FavoriteUsers } from "./FavoriteUsers";
 
 export function SettingsPage() {
   const { tokens } = useTheme();
@@ -39,6 +40,9 @@ export function SettingsPage() {
   return (
     <>
       <Heading marginBottom={tokens.space.xs}>Settings</Heading>
+      
+      <FavoriteUsers />
+      
       <Card>
         <Heading level={5}>{user.signInDetails?.loginId}</Heading>
         <Divider marginTop={tokens.space.medium} marginBottom={tokens.space.medium} />

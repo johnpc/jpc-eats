@@ -23,13 +23,19 @@ const schema = a
         googlePlaceId: a.string().required(),
       })
       .authorization((allow) => [allow.owner(), allow.custom()]),
+    FavoriteUser: a
+      .model({
+        email: a.email().required(),
+      })
+      .authorization((allow) => [allow.owner(), allow.authenticated().to(["read"])]),
     Choice: a
       .model({
         optionPlaceIds: a.string().array().required(),
         selectedPlaceId: a.string(),
+        ownerEmail: a.email(),
       })
-      .secondaryIndexes((index) => [index("selectedPlaceId")])
-      .authorization((allow) => [allow.owner(), allow.custom()]),
+      .secondaryIndexes((index) => [index("selectedPlaceId"), index("ownerEmail")])
+      .authorization((allow) => [allow.owner(), allow.authenticated().to(["read", "update"])]),
     Preferences: a
       .model({
         compactMode: a.boolean(),
