@@ -8,6 +8,8 @@ export type ChoiceEntity = {
   optionPlaceIds: (string | null)[];
   selectedPlaceId?: string | null;
   ownerEmail?: string | null;
+  sharedWithEmail?: string | null;
+  owner?: string | null;
   updatedAt: string;
   createdAt: string;
 };

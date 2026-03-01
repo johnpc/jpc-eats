@@ -4,11 +4,16 @@ import { ChoiceEntity } from "../lib/types";
 import { useAuth } from "./useAuth";
 
 export function useChoices() {
+  const { user } = useAuth();
+  const userId = user?.userId;
+
   return useQuery({
-    queryKey: ["choices"],
+    queryKey: ["choices", userId],
+    enabled: !!userId,
     queryFn: async () => {
       const { data } = await client.models.Choice.list();
-      return data as ChoiceEntity[];
+      // Only return choices you own
+      return (data as ChoiceEntity[]).filter((c) => c.owner === userId);
     },
   });
 }
@@ -21,21 +26,14 @@ export function useSharedChoices() {
     queryKey: ["sharedChoices", myEmail],
     enabled: !!myEmail,
     queryFn: async () => {
-      // Find users who have favorited me
-      const { data: favoritedBy } = await client.models.FavoriteUser.list({
-        filter: { email: { eq: myEmail } },
+      // Query choices shared directly with my email
+      const { data } = await client.models.Choice.listChoiceBySharedWithEmail({
+        sharedWithEmail: myEmail!,
       });
-      if (!favoritedBy.length) return [];
-
-      // Get their owner IDs and fetch their active choices
-      const ownerEmails = favoritedBy.map((f) => f.owner).filter(Boolean);
-      const results: ChoiceEntity[] = [];
-      for (const email of ownerEmails) {
-        const { data } = await client.models.Choice.listChoiceByOwnerEmail({ ownerEmail: email! });
-        const active = data.find((c) => !c.selectedPlaceId || c.selectedPlaceId === "NONE");
-        if (active) results.push(active as ChoiceEntity);
-      }
-      return results;
+      // Only return active (unselected) choices
+      return (data as ChoiceEntity[]).filter(
+        (c) => !c.selectedPlaceId || c.selectedPlaceId === "NONE",
+      );
     },
   });
 }
@@ -46,10 +44,15 @@ export function useCreateChoice() {
 
   return useMutation({
     mutationFn: async (optionPlaceIds: string[]) => {
+      // Get favorite user to share with
+      const { data: favorites } = await client.models.FavoriteUser.list();
+      const myFavorite = favorites.find((f) => f.owner === user?.userId);
+
       const { data } = await client.models.Choice.create({
         optionPlaceIds,
         selectedPlaceId: "NONE",
         ownerEmail: user?.signInDetails?.loginId,
+        sharedWithEmail: myFavorite?.email,
       });
       return data;
     },
