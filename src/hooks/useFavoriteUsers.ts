@@ -11,10 +11,8 @@ export function useFavoriteUsers() {
     queryKey: ["favoriteUsers", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const { data } = await client.models.FavoriteUser.list({
-        filter: { owner: { eq: userId } },
-      });
-      return data as FavoriteUserEntity[];
+      const { data } = await client.models.FavoriteUser.list();
+      return (data as FavoriteUserEntity[]).filter((f) => f.owner === userId);
     },
   });
 }
