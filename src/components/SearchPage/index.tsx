@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { Heading, SearchField, Loader, Message, useTheme } from "@aws-amplify/ui-react";
+import {
+  Heading,
+  SearchField,
+  Loader,
+  Message,
+  useTheme,
+} from "@aws-amplify/ui-react";
 import { useDebounce } from "use-debounce";
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useSearchPlaces } from "../../hooks/useSearchPlaces";
@@ -11,10 +17,19 @@ export function SearchPage() {
   const [search, setSearch] = useState("food");
   const [debouncedSearch] = useDebounce(search, 500);
   const coordinates = useGeolocation();
-  const { data: places = [], isLoading } = useSearchPlaces(coordinates, debouncedSearch);
+  const { data: places = [], isLoading } = useSearchPlaces(
+    coordinates,
+    debouncedSearch,
+  );
 
   useEffect(() => {
-    console.log("Search state:", { search, debouncedSearch, coordinates, isLoading, placesCount: places.length });
+    console.log("Search state:", {
+      search,
+      debouncedSearch,
+      coordinates,
+      isLoading,
+      placesCount: places.length,
+    });
   }, [search, debouncedSearch, coordinates, isLoading, places.length]);
 
   return (
@@ -31,11 +46,17 @@ export function SearchPage() {
       />
       {isLoading && <Loader variation="linear" />}
       {!isLoading && places.length === 0 && (
-        <Message variation="outlined" colorTheme="warning" heading="No places found">
+        <Message
+          variation="outlined"
+          colorTheme="warning"
+          heading="No places found"
+        >
           No restaurants near you were found.
         </Message>
       )}
-      <PlacesList places={places} />
+      <PlacesList
+        places={places.filter((p): p is NonNullable<typeof p> => !!p)}
+      />
     </>
   );
 }

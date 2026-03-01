@@ -26,8 +26,8 @@ const backend = defineBackend({
   data: data(authFunction),
 });
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-const underlyingAuthLambda = backend.authFunction.resources.lambda as Function;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const underlyingAuthLambda = backend.authFunction.resources.lambda as any;
 underlyingAuthLambda.addEnvironment(
   "ADMIN_API_KEY",
   process.env.ADMIN_API_KEY!,

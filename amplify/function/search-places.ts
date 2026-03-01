@@ -99,7 +99,7 @@ export const handler: Schema["searchGooglePlaces"]["functionHandler"] = async (
     return response.places;
   }
 
-  let nextPageToken: string | undefined = undefined;
+  const nextPageToken: string | undefined = undefined;
   let places: { id: string }[] = [];
   const placesApiResponse = await fetch(GOOGLE_PLACES_API_URL, {
     method: "POST",
@@ -151,7 +151,7 @@ export const handler: Schema["searchGooglePlaces"]["functionHandler"] = async (
   const hydratedPlaces = await Promise.all(hydratedPlacePromises);
   console.log({ hydratedPlaces });
   places = places.concat(hydratedPlaces);
-  nextPageToken = placesApiResponseJson.nextPageToken;
+  void nextPageToken; // Unused but kept for future pagination
 
   const resultString = JSON.stringify({
     places,

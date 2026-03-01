@@ -1,8 +1,8 @@
 import { Collection, useTheme } from "@aws-amplify/ui-react";
-import { PlaceCard } from "./PlaceCard";
+import { PlaceCard, PlaceCardProps } from "./PlaceCard";
 
 interface PlacesListProps {
-  places: any[];
+  places: PlaceCardProps["place"][];
 }
 
 export function PlacesList({ places }: PlacesListProps) {
