@@ -66,6 +66,7 @@ const schema = a
       name: a.string().required(),
       photos: a.string().array(),
       websiteUri: a.string(),
+      formattedAddress: a.string(),
       displayName: a.ref("GooglePlaceText").required(),
       generativeSummary: a.ref("GooglePlaceText"),
       editorialSummary: a.ref("GooglePlaceText"),

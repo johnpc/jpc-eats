@@ -75,6 +75,7 @@ export const handler: Schema["getGooglePlace"]["functionHandler"] = async (
     id: string;
     name: string;
     websiteUri: string;
+    formattedAddress: string;
     displayName: { text: string; languageCode: string };
     generativeSummary: { text: string; languageCode: string };
     editorialSummary: { text: string; languageCode: string };
@@ -100,6 +101,7 @@ export const handler: Schema["getGooglePlace"]["functionHandler"] = async (
     id: placeApiResponseJson.id,
     name: placeApiResponseJson.name,
     websiteUri: placeApiResponseJson.websiteUri,
+    formattedAddress: placeApiResponseJson.formattedAddress,
     displayName: placeApiResponseJson.displayName,
     generativeSummary: placeApiResponseJson.generativeSummary,
     editorialSummary: placeApiResponseJson.editorialSummary,
