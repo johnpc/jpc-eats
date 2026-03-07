@@ -1,11 +1,13 @@
 import { defineBackend, defineFunction } from "@aws-amplify/backend";
-import { Function } from "aws-cdk-lib/aws-lambda";
+import { Function, StartingPosition } from "aws-cdk-lib/aws-lambda";
+import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
 import { getPlaceImageFunction } from "./function/get-place-image/resource";
 import { searchPlacesFunction } from "./function/search-places/resource";
 import { getPlaceFunction } from "./function/get-place/resource";
+import { sendToTeslaFunction } from "./function/send-to-tesla/resource";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -20,6 +22,7 @@ const backend = defineBackend({
   getPlaceFunction,
   searchPlacesFunction,
   getPlaceImageFunction,
+  sendToTeslaFunction,
   authFunction,
   auth,
   storage,
@@ -84,3 +87,31 @@ cfnUserPoolClient.tokenValidityUnits = {
 // backend.addOutput({
 //   custom: outputs,
 // });
+
+// Tesla navigation trigger
+const teslaLambda = backend.sendToTeslaFunction.resources.lambda as Function;
+const choiceTable = backend.data.resources.tables["Choice"];
+
+teslaLambda.addEnvironment("TESSIE_API_KEY", process.env.TESSIE_API_KEY!);
+teslaLambda.addEnvironment("TESLA_VIN", process.env.TESLA_VIN!);
+teslaLambda.addEnvironment(
+  "CACHE_TABLE_NAME",
+  backend.data.resources.tables["GoogleApiCache"].tableName,
+);
+teslaLambda.addEnvironment(
+  "ALLOWED_OWNERS",
+  [
+    "d8d18320-a0f1-7066-4cdd-ef804e08bc4f::d8d18320-a0f1-7066-4cdd-ef804e08bc4f", // John
+    "38118380-0031-7066-c041-594d9103a164::38118380-0031-7066-c041-594d9103a164", // Emily
+  ].join(","),
+);
+
+choiceTable.grantStreamRead(teslaLambda);
+backend.data.resources.tables["GoogleApiCache"].grantReadData(teslaLambda);
+
+teslaLambda.addEventSource(
+  new DynamoEventSource(choiceTable, {
+    startingPosition: StartingPosition.LATEST,
+    batchSize: 1,
+  }),
+);
