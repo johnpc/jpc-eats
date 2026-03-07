@@ -1,8 +1,10 @@
 import { DynamoDBStreamEvent } from "aws-lambda";
+import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 
 const TESSIE_API_KEY = process.env.TESSIE_API_KEY!;
 const VIN = process.env.TESLA_VIN!;
 const ALLOWED_OWNERS = (process.env.ALLOWED_OWNERS || "").split(",");
+const client = new DynamoDBClient({});
 
 export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
   for (const record of event.Records) {
@@ -17,7 +19,6 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
     const selectedPlaceId = newImage.selectedPlaceId?.S;
     const oldSelectedPlaceId = oldImage?.selectedPlaceId?.S;
 
-    // Only trigger if selectedPlaceId changed and is valid
     if (
       !selectedPlaceId ||
       selectedPlaceId === "NONE" ||
@@ -26,10 +27,6 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
       continue;
     if (!owner || !ALLOWED_OWNERS.includes(owner)) continue;
 
-    // Get address from GoogleApiCache
-    const { DynamoDBClient, ScanCommand } =
-      await import("@aws-sdk/client-dynamodb");
-    const client = new DynamoDBClient({});
     const cacheResult = await client.send(
       new ScanCommand({
         TableName: process.env.CACHE_TABLE_NAME,
@@ -47,7 +44,6 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
     const address = placeData.formattedAddress;
     if (!address) continue;
 
-    // Send to Tesla
     const encoded = encodeURIComponent(address);
     const response = await fetch(
       `https://api.tessie.com/${VIN}/command/share?value=${encoded}&locale=en-US`,
