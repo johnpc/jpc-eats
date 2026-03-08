@@ -7,6 +7,7 @@ const ALLOWED_OWNERS = (process.env.ALLOWED_OWNERS || "").split(",");
 const client = new DynamoDBClient({});
 
 export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
+  console.log("Received event:", JSON.stringify(event, null, 2));
   for (const record of event.Records) {
     if (record.eventName !== "MODIFY" && record.eventName !== "INSERT")
       continue;
@@ -19,13 +20,23 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
     const selectedPlaceId = newImage.selectedPlaceId?.S;
     const oldSelectedPlaceId = oldImage?.selectedPlaceId?.S;
 
+    console.log("Processing:", { owner, selectedPlaceId, oldSelectedPlaceId });
+
     if (
       !selectedPlaceId ||
       selectedPlaceId === "NONE" ||
       selectedPlaceId === oldSelectedPlaceId
-    )
+    ) {
+      console.log("Skipping: invalid or unchanged selectedPlaceId");
       continue;
-    if (!owner || !ALLOWED_OWNERS.includes(owner)) continue;
+    }
+    if (!owner || !ALLOWED_OWNERS.includes(owner)) {
+      console.log("Skipping: owner not in allowed list", {
+        owner,
+        ALLOWED_OWNERS,
+      });
+      continue;
+    }
 
     const cacheResult = await client.send(
       new ScanCommand({
