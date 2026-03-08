@@ -49,10 +49,15 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
     );
 
     const cacheItem = cacheResult.Items?.[0];
+    console.log("Cache result:", {
+      found: !!cacheItem,
+      hasValue: !!cacheItem?.value?.S,
+    });
     if (!cacheItem?.value?.S) continue;
 
     const placeData = JSON.parse(cacheItem.value.S);
     const address = placeData.formattedAddress;
+    console.log("Address:", address);
     if (!address) continue;
 
     const encoded = encodeURIComponent(address);
