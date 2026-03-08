@@ -1,5 +1,5 @@
 import { DynamoDBStreamEvent } from "aws-lambda";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 
 const TESSIE_API_KEY = process.env.TESSIE_API_KEY!;
 const VIN = process.env.TESLA_VIN!;
@@ -39,9 +39,10 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
     }
 
     const cacheResult = await client.send(
-      new ScanCommand({
+      new QueryCommand({
         TableName: process.env.CACHE_TABLE_NAME,
-        FilterExpression: "contains(#h, :pid)",
+        IndexName: "googleApiCachesByHash",
+        KeyConditionExpression: "#h = :pid",
         ExpressionAttributeNames: { "#h": "hash" },
         ExpressionAttributeValues: { ":pid": { S: selectedPlaceId } },
         Limit: 1,
