@@ -1,6 +1,7 @@
 import { defineBackend, defineFunction } from "@aws-amplify/backend";
 import { Function, StartingPosition } from "aws-cdk-lib/aws-lambda";
 import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
@@ -108,6 +109,15 @@ teslaLambda.addEnvironment(
 
 choiceTable.grantStreamRead(teslaLambda);
 backend.data.resources.tables["GoogleApiCache"].grantReadData(teslaLambda);
+
+// Grant Query access to the GSI
+const cacheTable = backend.data.resources.tables["GoogleApiCache"];
+teslaLambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["dynamodb:Query"],
+    resources: [`${cacheTable.tableArn}/index/*`],
+  }),
+);
 
 teslaLambda.addEventSource(
   new DynamoEventSource(choiceTable, {
