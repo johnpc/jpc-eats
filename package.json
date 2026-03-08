@@ -37,6 +37,7 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.19.0",
     "@aws-amplify/backend-cli": "^1.8.1",
+    "@aws-sdk/client-dynamodb": "^3.1004.0",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.0.0",
     "@eslint/js": "^9.39.3",
