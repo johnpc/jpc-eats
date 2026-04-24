@@ -44,17 +44,32 @@ export function useCreateChoice() {
 
   return useMutation({
     mutationFn: async (optionPlaceIds: string[]) => {
-      // Get favorite user to share with
+      // Get all favorite users to share with
       const { data: favorites } = await client.models.FavoriteUser.list();
-      const myFavorite = favorites.find((f) => f.owner === user?.userId);
+      const myFavorites = favorites.filter((f) => f.owner === user?.userId);
 
-      const { data } = await client.models.Choice.create({
-        optionPlaceIds,
-        selectedPlaceId: "NONE",
-        ownerEmail: user?.signInDetails?.loginId,
-        sharedWithEmail: myFavorite?.email,
-      });
-      return data;
+      if (myFavorites.length === 0) {
+        // No favorites — create unshared choice
+        const { data } = await client.models.Choice.create({
+          optionPlaceIds,
+          selectedPlaceId: "NONE",
+          ownerEmail: user?.signInDetails?.loginId,
+        });
+        return data;
+      }
+
+      // Create one choice per favorite user
+      const results = await Promise.all(
+        myFavorites.map((fav) =>
+          client.models.Choice.create({
+            optionPlaceIds,
+            selectedPlaceId: "NONE",
+            ownerEmail: user?.signInDetails?.loginId,
+            sharedWithEmail: fav.email,
+          }),
+        ),
+      );
+      return results[0].data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["choices"] });
